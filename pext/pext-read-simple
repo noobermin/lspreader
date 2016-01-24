@@ -62,7 +62,7 @@ USEZ=$([ -n "$(cat *.lsp | grep "z-cells")" ] && echo "z" || echo "")
 
 DIMS=-$USEX$USEY$USEZ
 cp $RDDIR/lspreader.py $RDDIR/misc.py $RDDIR/pext.py $RDDIR/cmaps.py \
-   $RDDIR/angular.py $RDDIR/quantities.py $RDDIR/arrcat.py \
+   $RDDIR/pext/angular.py $RDDIR/pext/quantities.py $RDDIR/arrcat.py \
    .
 echo "\
 #!/usr/bin/env bash
