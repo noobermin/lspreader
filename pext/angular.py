@@ -8,13 +8,13 @@ Usage:
 
 Options:
   --angle-bins=BINS -a BINS   Set the number of angle bins.  [default: 180]
-  --radial-bins=BINS -r BINS  Set the number of radial bins. [default: 40]
+  --energy-bins=BINS -r BINS  Set the number of energy bins. [default: 40]
   --ltitle=TITLE -t TITLE     Set the title.
   --rtitle=TITLE -T TITLE     Set the right title.
   --clabel=CLABEL -c CLABEL   Set colorbar label. [default: $p C$]
   --no-cbar                   Turn off the colorbar.
-  --KeV -k                    Scale by 100s of KeV instead of MeV.
-  --max-e=MAXE -e MAXE        Set the maximum energy value (in units depending on --KeV flag)
+  --keV -k                    Scale by 100s of KeV instead of MeV.
+  --max-e=MAXE -e MAXE        Set the maximum energy value (in units depending on --keV flag)
   --e-step=ESTEP              Set the step of grid lines for Energy.
   --high-res -H               Output a high resolution plt.
   --max-q=MAXQ -q MAXQ        Set the maximum for the charge (pcolormesh's vmax value).
@@ -33,110 +33,139 @@ import numpy as np;
 import matplotlib;
 import matplotlib.pyplot as plt;
 import matplotlib.patheffects as pe;
-import cPickle as pickle;
 from matplotlib import colors;
-from docopt import docopt;
 from misc import conv, test, readfile
 from cmaps import pastel_clear,plasma_clear,viridis_clear,magma_clear_r;
 import re;
 
+
 def prep(opts):
     '''I put this here in order to reuse this'''
+    
     inname = opts['<input>'];
-    outname = opts['<output>'];
-    
-    phi_spacing = float(opts['--angle-bins']);
-    E_spacing = float(opts['--radial-bins']);    
-    maxE = conv(opts['--max-e'],default=(1000 if opts['--KeV'] else 4.0),func=float);
-    maxQ = float(opts['--max-q']) if opts['--max-q'] else None;
-    Estep = conv(opts['--e-step'],default=(250 if opts['--KeV'] else 1.0),func=float); 
-    F = float(opts['--factor']);
-    d = np.load(inname, allow_pickle=True);
-    
-    e = d['KE'];
-    if opts['--KeV']:
-        e/=1e3;
-    else:
-        e/=1e6;
-    s =-d['q']*1e6*F;
-    if opts['--polar']:
-        phi = d['phi_n'];
-        phi_labels = ['Forward\n0$^{\circ}$',
-                      '45$^{\circ}$',
-                      'Up\n90$^{\circ}$',
-                      '135$^{\circ}$',
-                      'Backwards\n180$^{\circ}$',
-                      '215$^{\circ}$',
-                      'Down\n270$^{\circ}$',
-                      '315$^{\circ}$'];
-    else:
-        phi = d['phi'];
-        phi_labels = ['Forward\n0$^{\circ}$',
-                      '45$^{\circ}$',
-                      'Left\n90$^{\circ}$',
-                      '135$^{\circ}$',
-                      'Backwards\n180$^{\circ}$',
-                      '215$^{\circ}$',
-                      'Right\n270$^{\circ}$',
-                      '315$^{\circ}$'];
+    kev = opts['--keV'];
+    def getdef_kev(label):
+        
+        if kev:
+            return defaults[label+'_kev'];
+        else:
+            return defaults[label];
     kw = {
         'angle_bins' : float(opts['--angle-bins']),
-        'radial_bins': float(opts['--radial-bins']),
-        'max_e': float(opts['--max-e']) if opts['--max-e'] else (1000 if opts['--KeV'] else 4.0),
+        'energy_bins': float(opts['--energy-bins']),
+        'max_e': float(opts['--max-e']) if opts['--max-e'] else (
+            getdef_kev('max_e')),
         'max_q': float(opts['--max-q']) if opts['--max-q'] else None,
         'min_q': float(opts['--min-q']) if opts['--min-q'] else None,
-        'KeV': opts['--KeV'],
+        'keV': kev,
         'clabel' : opts['--clabel'],
         'colorbar' : not opts['--no-cbar'],
         'e_step' : float(opts['--e-step']) if opts['--e-step'] else None,
-        'labels':phi_labels,
+        'labels': 'tdefault' if opts['--polar'] else 'default',
         'rtitle':opts['--rtitle'],
         'ltitle':opts['--ltitle'],
-        'outname':outname,
         'oap': float(opts['--oap']) if opts['--oap'] != 'none' else None,
         'log_q': opts['--log10'],
     };
-    if opts['--cmap'] == 'viridis':
-        kw['cmap'] = viridis_clear;
-    elif opts['--cmap'] == 'plasma':
-        kw['cmap'] = plasma_clear;
-    elif opts['--cmap'] == 'magma_r':
-        kw['cmap'] = magma_clear_r;
-    else:
-        kw['cmap'] = pastel_clear;
-    if opts['--normalize']:
-        Efactor = kw['max_e']/kw['radial_bins'];
-        if kw['KeV']:
-            Efactor *= 1e-3;
-            kw['clabel'] += ' rad$^{-1}$ MeV$^{-1}$'            
-        else:
-            kw['clabel'] += ' rad$^{-1}$ MeV$^{-1}$'
-        s /= Efactor*2*np.pi/phi_spacing;
+    cmap = _str2cmap(opts['--cmap']);
+    if not cmap:
+        cmap = opts['--cmap'];
+    kw['cmap'] = cmap;
     kw['rgridopts'] = {};
     if opts['--e-direction']:
         kw['rgridopts'].update({'angle':opts['--e-direction']});
     if opts['--e-units']:
         kw['rgridopts'].update({'unit':opts['--e-units']});
-    
+    if opts['--normalize']:
+        kw['clabel'] += defaults['norm_units'];
+
+    #end of setting up kws into angular.
+    #this deals with pre-processing.
+    s,phi,e,d = load(inname,
+                     F=float(opts['--factor']),
+                     normalize=kw if opts['--normalize'] else None,
+                     polar=opts['--polar'], keV=kev)
     return s,phi,e,kw,d;
 
-def main():
-    opts=docopt(__doc__,help=True);
-    s,phi,e,kw,_ = prep(opts);
-    if opts['<output>'] and opts['--agg']:
-        plt.change_backend('agg');
-    angular(s,phi,e,**kw);
-    if opts['<output>']:
-        if opts['--high-res']:
-            plt.savefig(opts['<output>'],dpi=1000);
-        else:
-            plt.savefig(opts['<output>']);
+def load(fname,
+         F=None,normalize=False,polar=False, keV=False):
+    '''
+    load the pext data and normalize
+
+    parameters:
+    -----------
+
+    fname       -- name of file or data
+    F           -- Factor to scale by, None doesn't scale.
+    normalize   -- if None, don't normalize. Otherwise, pass a dict with
+                   {'angle_bins': ,'energy_bins': , 'max_e': }
+                   with the obvious meanings. Normalize with max_phi as phi.
+    polar       -- if polar, use phi_n over phi in the file/data.
+    keV         -- scale by keV over MeV
+    '''
+    d = np.load(fname, allow_pickle=True);
+    e = d['KE'];
+    phi = d['phi_n'] if polar else d['phi'];
+    if keV:
+        e/=1e3;
     else:
-        plt.show();
-    
+        e/=1e6;
+    s = -d['q']*1e6;
+    if F is not None: s*=F;
+    if normalize:
+         kw = normalize
+         Efactor = kw['max_e']/kw['energy_bins'];
+         if kw['keV']: Efactor *= 1e-3;
+         s /= Efactor*2*np.pi/kw['angle_bins'];
+    return s,phi,e,d
+
+def _str2cmap(i):    
+    if i == 'viridis':
+        return viridis_clear;
+    elif i == 'plasma':
+        return plasma_clear;
+    elif i == 'magma_r':
+        return magma_clear_r;
+    elif i == 'pastel':
+        return pastel_clear;
     pass;
 
+defaults = {
+    'tlabels': ['Forward\n0$^{\circ}$',
+               '45$^{\circ}$',
+               'Up\n90$^{\circ}$',
+               '135$^{\circ}$',
+               'Backwards\n180$^{\circ}$',
+               '215$^{\circ}$',
+               'Down\n270$^{\circ}$',
+               '315$^{\circ}$'],
+    'labels': ['Forward\n0$^{\circ}$',
+               '45$^{\circ}$',
+               'Left\n90$^{\circ}$',
+               '135$^{\circ}$',
+               'Backwards\n180$^{\circ}$',
+               '215$^{\circ}$',
+               'Right\n270$^{\circ}$',
+               '315$^{\circ}$'],
+    'angle_bins': 180,
+    'energy_bins': 40,
+    'max_e': 4.0,
+    'max_e_kev': 1000,
+    'e_step' : 1.0,
+    'e_step_kev': 250,
+    'max_q': None,
+    'min_q': None,
+    'cmap': pastel_clear,
+    'clabel': '$pC$',
+    'log_q' : None,
+    'norm_units': ' rad$^{-1}$ MeV$^{-1}$',
+};
 
+def getkw(kw,label):
+    return kw[label] if test(kw,label) else defaults[label];
+def getkw_kev(kw,label,kev):
+    if kev: label+='_kev';
+    return getkw(kw,label);
 def angular(s, phi, e,
             colorbar=True,**kw):
     '''
@@ -151,12 +180,14 @@ def angular(s, phi, e,
       max_e       -- Maximum energy.
       max_q       -- Maximum charge.
       angle_bins  -- Set the number of angle bins.
-      radial_bins -- Set the number of radial (energy) bins.
+      energy_bins -- Set the number of energy bins.
       clabel      -- Set the colorbar label.
       colorbar    -- If true, plot the colorbar.
       e_step      -- Set the steps of the radius contours.
-      labels      -- Set the angular labels.
-      KeV         -- Use KeV isntead of MeV.
+      labels      -- Set the angular labels. If not a list, if
+                     'default', use default. If 'tdefault', use
+                     default for theta. (See defaults dict);
+      keV         -- Use keV isntead of MeV.
       fig         -- If set, use this figure, Otherwise,
                      make a new figure.
       ax          -- If set, use this axis. Otherwise,
@@ -168,27 +199,31 @@ def angular(s, phi, e,
       rgridopts   -- pass a dictionary that sets details for the
                      rgrid labels.
     '''
-    phi_spacing = kw['angle_bins'];
-    E_spacing =   kw['radial_bins'];    
-    maxE  = kw['max_e']  if kw['max_e'] else (1000 if kw['KeV'] else 4.0);
-    maxQ  = kw['max_q']  if kw['max_q'] else None;
-    minQ  = kw['min_q']  if kw['min_q'] else None;
-    Estep = kw['e_step'] if kw['e_step'] else (250 if kw['KeV'] else 1.0);
-    clabel = kw['clabel'] if kw['clabel'] else '$pC$';
-    if test(kw,'cmap'):
-        cmap = kw['cmap'];
-    else:
-        cmap = pastel_clear;
+    kev = test(kw, 'keV');
+    phi_spacing = getkw(kw,'angle_bins');
+    E_spacing =   getkw(kw,'energy_bins');
+    maxE  = getkw_kev(kw,'max_e',kev);
+    maxQ  = getkw(kw,'max_q');
+    minQ  = getkw(kw,'min_q');
+    Estep = getkw_kev(kw,'e_step',kev);
+    clabel = getkw(kw,'clabel');
+    cmap = getkw(kw, 'cmap');
+
     phi_bins = np.linspace(-np.pi,np.pi,phi_spacing+1);
     E_bins   = np.linspace(0, maxE, E_spacing+1);
             
     PHI,E = np.mgrid[ -np.pi : np.pi : phi_spacing*1j,
                       0 : maxE : E_spacing*1j];
     S,_,_ = np.histogram2d(phi,e,bins=(phi_bins,E_bins),weights=s);
-    fig = kw['fig'] if test(kw,'fig') else plt.figure(1,facecolor=(1,1,1));
-    ax  = kw['ax'] if test(kw,'ax') else plt.subplot(projection='polar',axisbg='white');
+    if test(kw,'fig'):
+        fig = kw['fig']
+    else:
+        fig = plt.figure(1,facecolor=(1,1,1));
+    if test(kw,'ax'):
+        ax= kw['ax']
+    else:
+        ax= plt.subplot(projection='polar',axisbg='white');
     norm = matplotlib.colors.LogNorm() if test(kw,'log_q') else None;
-    
     surf=plt.pcolormesh(PHI,E,S,norm=norm, cmap=cmap,vmin=minQ,vmax=maxQ);
     #making radial guides. rgrids only works for plt.polar calls
     full_phi = np.linspace(0.0,2*np.pi,100);
@@ -205,7 +240,7 @@ def angular(s, phi, e,
         if test(ropts, 'unit'):
             runit = ropts['unit'];
         else:
-            runit = 'KeV' if test(kw,'KeV') else 'MeV';
+            runit = 'keV' if kev else 'MeV';
         if test(ropts, 'angle'):
             rangle = ropts['angle'];
         else:
@@ -219,7 +254,7 @@ def angular(s, phi, e,
         else:
             c1,c2 = "black","w";
     else:
-        runit = 'KeV' if test(kw,'KeV') else 'MeV';
+        runit = 'keV' if kev else 'MeV';
         rangle = 45;
         rsize = 10.5;
         c1,c2 = "black","w";
@@ -239,10 +274,7 @@ def angular(s, phi, e,
         oap = kw['oap']/2 * np.pi/180;
         maxt = oap+np.pi; mint = np.pi-oap;
         maxr  = maxE*.99;
-        if kw['KeV']:
-            minr=120;
-        else:
-            minr=.12;
+        minr = 120 if kev else .12;
         ths=np.linspace(mint, maxt, 20);
         rs =np.linspace(minr, maxr, 20);
         mkline = lambda a,b: plt.plot(a,b,c=(0.2,0.2,0.2),ls='-',alpha=0.5);
@@ -250,8 +282,14 @@ def angular(s, phi, e,
         mkline(mint*np.ones(ths.shape), rs);
         mkline(maxt*np.ones(ths.shape), rs);
     if test(kw,'labels'):
-        ax.set_xticks(np.pi/180*np.linspace(0,360,len(kw['labels']),endpoint=False));
-        ax.set_xticklabels(kw['labels']);
+        if kw['labels'] == 'default':
+            labels = defaults['labels'];
+        elif kw['labels'] == 'tdefault':
+            labels = defaults['tlabels'];
+        else:
+            labels= kw['labels'];
+        ax.set_xticks(np.pi/180*np.linspace(0,360,len(labels),endpoint=False));
+        ax.set_xticklabels(labels);
     if colorbar:
         c=fig.colorbar(surf,pad=0.1);
         c.set_label(clabel);
@@ -268,4 +306,19 @@ def angular(s, phi, e,
     return (surf, ax, fig, (phi_bins, E_bins));
 
 if __name__ == "__main__":
-    main();
+    import cPickle as pickle;
+    from docopt import docopt;
+    opts=docopt(__doc__,help=True);
+    s,phi,e,kw,_ = prep(opts);
+    if opts['<output>'] and opts['--agg']:
+        plt.change_backend('agg');
+    angular(s,phi,e,**kw);
+    if opts['<output>']:
+        if opts['--high-res']:
+            plt.savefig(opts['<output>'],dpi=1000);
+        else:
+            plt.savefig(opts['<output>']);
+    else:
+        plt.show();
+    
+    pass;
