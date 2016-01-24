@@ -108,7 +108,9 @@ def main():
             coords.reverse();
     elif num_of_coords ==3:
         if opts['--reverse']:
-            coords = [coords[0]] + reversed(coords[1:])
+            coords = ['x','z','y'];
+        else:
+            coords = ['x','y','z'];
     d = add_quantities(d, coords);
     if opts['--dict']:
         d = {k:d[k] for k in d.dtype.names};
