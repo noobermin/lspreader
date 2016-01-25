@@ -46,8 +46,8 @@ for i,(ff,sf,t) in enumerate(zip(ffs,sfs,tracktime)):
             gzip=True, remove_edges=True);
     if i == 0:
         s = np.lexsort((fd['z'],fd['y'],fd['x']));
-    fd = flds.rect_flds(fd,s);
-    sd = flds.rect_flds(sd,s);
+    fd = flds.rect(fd,s);
+    sd = flds.rect(sd,s);
     td=tracks[:i]
     out = {sl:sd[sl] for sl in slabels};
     out.update(
