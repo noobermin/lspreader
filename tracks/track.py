@@ -21,22 +21,22 @@ files=misc.subcall(('ls'))
 fldsrx=re.compile(opts['--fldsrx']);
 sclrrx=re.compile(opts['--sclrrx']);
 numrx=re.compile(opts['--numrx']);
-flds = [file for file in files
-         if fldsrx.match(file) ];
-sclr = [file for file in files
-         if sclrrx.match(file) ];
+ffs = [file for file in files
+       if fldsrx.match(file) ];
+sfs = [file for file in files
+       if sclrrx.match(file) ];
 nums = [int(numrx.match(file).group(1))
-        for file in flds
+        for file in ffs
         if numrx.match(file) ];
 s=np.argsort(nums);
-flds[:] = np.array(flds)[s];
-sclr[:] = np.array(sclr)[s];
+ffs[:] = np.array(ffs)[s];
+sfs[:] = np.array(sfs)[s];
 tracksf=np.load(opts['--track']);
 tracks    = tracksf['data'];
 tracktime = tracksf['time'];
 flabels = ['Ex','Ey','Ez','Bx','By','Bz'];
 slabels = ['RhoN{}'.format(i) for i in range(1,12)];
-for i,(ff,sf,t) in enumerate(zip(flds,sclr,tracktime)):
+for i,(ff,sf,t) in enumerate(zip(ffs,sfs,tracktime)):
     if i>15:
         break;
     print("reading {} and {}".format(ff,sf));
