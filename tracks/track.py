@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 '''
 Usage:
-    ./track.py <fldsrx> <sclrrx>
+    ./track.py [options] <fldsrx> <sclrrx>
 
 Options:
     --help -h
