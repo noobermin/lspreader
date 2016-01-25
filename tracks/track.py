@@ -28,14 +28,13 @@ sclr = [file for file in files
 nums = [int(numrx.match(file).group(1))
         for file in flds
         if numrx.match(file) ];
-print(nums);quit();
 s=np.argsort(nums);
 flds[:] = np.array(flds)[s];
 sclr[:] = np.array(sclr)[s];
 tracksf=np.load(opts['--track']);
 tracks    = tracksf['data'];
 tracktime = tracksf['time'];
-print(flds);
+print(flds[:16]);
 quit();
 flabels = ['Ex','Ey','Ez','Bx','By','Bz'];
 slabels = ['RhoN{}'.format(i) for i in range(1,12)];
