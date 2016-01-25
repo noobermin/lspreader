@@ -32,7 +32,8 @@ sclr[:] = np.array(sclr)[s];
 tracksf=np.load(opts['--track']);
 tracks    = tracksf['data'];
 tracktime = tracksf['time'];
-
+print(flds);
+quit();
 flabels = ['Ex','Ey','Ez','Bx','By','Bz'];
 slabels = ['RhoN{}'.format(i) for i in range(1,12)];
 for i,(ff,sf,t) in enumerate(zip(flds,sclr,tracktime)):
