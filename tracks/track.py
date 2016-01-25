@@ -26,6 +26,7 @@ sclr = [file for file in files
 nums = [numrx.match(file)
         for file in files
         if numrx.match(file) ]
+print(opts['--numrx']);
 print(nums);quit();
 s=np.argsort(nums);
 flds[:] = np.array(flds)[s];
