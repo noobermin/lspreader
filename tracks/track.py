@@ -1,12 +1,14 @@
 #!/usr/bin/env python2
 '''
 Usage:
-    ./track.py [options] <fldsrx> <sclrrx>
+    ./track.py [options]
 
 Options:
     --help -h
     --track=T -t T     Specify track file.
-    --numrx=N -n N     The regex for numbers. [default: .*([0-9]+).p4 ]
+    --numrx=N -n N     The regex for numbers in flds. [default: flds([0-9]+).p4]
+    --fldsrx=R -f R    The regex for numbers in flds. [default: flds.*.p4.gz]
+    --sclrrx=R -s R    The regex for numbers in sclr. [default: sclr.*.p4.gz]
 '''
 from docopt import docopt;
 from lspreader import flds,misc
@@ -16,17 +18,16 @@ import numpy as np;
 import matplotlib.pyplot as plt;
 opts = docopt(__doc__,help=True);
 files=misc.subcall(('ls'))
-fldsrx=re.compile(opts['<fldsrx>']);
-sclrrx=re.compile(opts['<sclrrx>']);
+fldsrx=re.compile(opts['--fldsrx']);
+sclrrx=re.compile(opts['--sclrrx']);
 numrx=re.compile(opts['--numrx']);
 flds = [file for file in files
          if fldsrx.match(file) ];
 sclr = [file for file in files
          if sclrrx.match(file) ];
 nums = [numrx.match(file)
-        for file in files
-        if numrx.match(file) ]
-print(opts['--numrx']);
+        for file in flds
+        if numrx.match(file) ];
 print(nums);quit();
 s=np.argsort(nums);
 flds[:] = np.array(flds)[s];
