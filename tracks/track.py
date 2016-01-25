@@ -37,31 +37,27 @@ tracktime = tracksf['time'];
 flabels = ['Ex','Ey','Ez','Bx','By','Bz'];
 slabels = ['RhoN{}'.format(i) for i in range(1,12)];
 for i,(ff,sf,t) in enumerate(zip(ffs,sfs,tracktime)):
-    if i>5:
+    if i>10:
         break;
     print("reading {} and {}".format(ff,sf));
-    print("  reading sclrs and flds");
     fd=read(ff,var=flabels,
             gzip=True, remove_edges=True);
     sd=read(sf,var=slabels,
             gzip=True, remove_edges=True);
     if i == 0:
         srt = flds.firstsort(fd);
-    print("  recting sclrs and flds");
     fd = flds.sort(fd,srt);
     sd = flds.sort(sd,srt);
-    td=tracks[:i]
-    print("  making output");
+    #td=tracks[:i]
     out = {sl:sd[sl] for sl in slabels};
     out.update(
         {fl:fd[fl] for fl in flabels});
     out.update(
         {'x':sd['x'],'y':sd['y'],'z':sd['z']});
-    out.update(
-        {'tracks':td});
+    #out.update(
+    #    {'tracks':td});
     out.update(
         {'time':t });
-    print(" saving");
-    np.savez('tracks/data{}'.format(i),**out);
-    print("saved");
+    np.savez_compressed('tracks/data{}'.format(i),**out);
+    
 
