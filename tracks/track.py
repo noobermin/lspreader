@@ -1,5 +1,7 @@
 #!/usr/bin/env python2
 '''
+Basic, slow, sequential script for reading tracks and field data together.
+
 Usage:
     ./track.py [options]
 
