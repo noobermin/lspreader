@@ -48,16 +48,16 @@ for i,(ff,sf,t) in enumerate(zip(ffs,sfs,tracktime)):
         srt = flds.firstsort(fd);
     fd = flds.sort(fd,srt);
     sd = flds.sort(sd,srt);
-    #td=tracks[:i]
+    td=tracks[:i]
     out = {sl:sd[sl] for sl in slabels};
     out.update(
         {fl:fd[fl] for fl in flabels});
     out.update(
         {'x':sd['x'],'y':sd['y'],'z':sd['z']});
-    #out.update(
-    #    {'tracks':td});
+    out.update(
+        {'tracks':td});
     out.update(
         {'time':t });
-    np.savez_compressed('tracks/data{}'.format(i),**out);
+    np.savez_compressed('/home/ngirmang.1/test/data'.format(i),**out);
     
 
