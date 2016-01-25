@@ -254,7 +254,6 @@ def read(fname,**kw):
                     concatenation.
     '''
     openf = gzip.open if test(kw, 'gzip') else open;
-    print(openf); quit();
     with openf(fname,'rb') as file:
         if test(kw,'override'):
             dump, start = kw['override'];
