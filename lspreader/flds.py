@@ -16,7 +16,7 @@ def sort(d,s):
     '''
     labels = [ key for key in d.keys()
                if key not in ['xs', 'ys', 'zs'] ];
-    shape, si = s;
+    si,shape = s;
     for l in labels:
         d[l] = d[l][si].reshape(shape);
     return d;
