@@ -40,13 +40,14 @@ for i,(ff,sf,t) in enumerate(zip(ffs,sfs,tracktime)):
     if i>5:
         break;
     print("reading {} and {}".format(ff,sf));
+    print("  reading sclrs and flds");
     fd=read(ff,var=flabels,
             gzip=True, remove_edges=True);
     sd=read(sf,var=slabels,
             gzip=True, remove_edges=True);
     if i == 0:
         s = np.lexsort((fd['z'],fd['y'],fd['x']));
-    print("  reading sclrs and flds");
+    print("  recting sclrs and flds");
     fd = flds.rect(fd,s);
     sd = flds.rect(sd,s);
     td=tracks[:i]
