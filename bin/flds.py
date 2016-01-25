@@ -9,6 +9,7 @@ Usage:
 Options:
   --help -h              Show this help.
   --verbose -v           Turn on verbosity.
+  --gzip -g              Read in gzipped data.
   --pickle -p            Use pickle over compressed npz.
   --reshape -r           Use rectangular reshaping for contiguous simulations.
 '''
@@ -25,7 +26,8 @@ if len(opts['<var>']) == 0:
 b=time();
 d=rd.read(opts['<input>'],
           var=opts['<var>'],vprint=vprint,
-          remove_edges=opts['--reshape']);
+          remove_edges=opts['--reshape'],
+          gzip=opts['--gzip']);
     
 vprint("time to read file {}: {}".format(opts['<input>'],time()-b));
 vprint("read: {}".format(",".join(d.keys())));
