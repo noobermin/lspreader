@@ -30,7 +30,7 @@ Options:
 '''
 from lspreader import lspreader as rd;
 from lspreader.pmovie import firsthash, genhash, addhash, sortframe
-from misc import dump_pickle, h5w, mkvprint,  readfile;
+from lspreader.misc import dump_pickle, h5w, mkvprint,  readfile;
 from docopt import docopt;
 import h5py as h5;
 import numpy as np;
