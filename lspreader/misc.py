@@ -6,6 +6,7 @@ import cPickle as pickle;
 import numpy as np;
 from matplotlib import colors;
 import h5py as h5;
+import subprocess;
 
 def conv(arg,default=None,func=None):
     if func:
