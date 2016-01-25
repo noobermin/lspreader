@@ -37,8 +37,6 @@ tracktime = tracksf['time'];
 flabels = ['Ex','Ey','Ez','Bx','By','Bz'];
 slabels = ['RhoN{}'.format(i) for i in range(1,12)];
 for i,(ff,sf,t) in enumerate(zip(ffs,sfs,tracktime)):
-    if i>10:
-        break;
     print("reading {} and {}".format(ff,sf));
     fd=read(ff,var=flabels,
             gzip=True, remove_edges=True);
@@ -58,6 +56,6 @@ for i,(ff,sf,t) in enumerate(zip(ffs,sfs,tracktime)):
         {'tracks':td});
     out.update(
         {'time':t });
-    np.savez_compressed('/home/ngirmang.1/test/data'.format(i),**out);
+    np.savez_compressed('/home/ngirmang.1/fasttmp/data{}'.format(i),**out);
     
 
