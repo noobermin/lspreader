@@ -1,6 +1,7 @@
 '''
 Functions for flds and sclr files.
 '''
+import numpy as np;
 
 def rect(d,s=None):
     dims = ['xs', 'ys', 'zs'];
