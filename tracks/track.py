@@ -46,7 +46,7 @@ for i,(ff,sf,t) in enumerate(zip(ffs,sfs,tracktime)):
     sd=read(sf,var=slabels,
             gzip=True, remove_edges=True);
     if i == 0:
-        srt = flds.firstsort(d);
+        srt = flds.firstsort(fd);
     print("  recting sclrs and flds");
     fd = flds.sort(fd,srt);
     sd = flds.sort(sd,srt);
