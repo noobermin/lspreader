@@ -9,13 +9,16 @@ from misc import test;
 
 #get basic dtypes
 def get_int(file,N=1,forcearray=False):
-    ret=np.fromfile(file,dtype='>i4',count=N);
+    ret=np.frombuffer(file.read(4*N),dtype='>i4',count=N);
+    #microoptimization for GB arrays, although fromstring works easier.
+    ret.flags.writeable = True
     if N==1 and not forcearray:
         return ret[0];
     return ret;
 
 def get_float(file,N=1,forcearray=False):
-    ret=np.fromfile(file,dtype='>f4',count=N);
+    ret=np.frombuffer(file.read(4*N),dtype='>f4',count=N);
+    ret.flags.writeable = True
     if N==1 and not forcearray:
         return ret[0];
     return ret;
