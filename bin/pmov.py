@@ -60,12 +60,12 @@ if __name__=='__main__':
         frames[:] = [sortframe(frame) for frame in frames];
         vprint("done");
     #experimental hashing
-    if opts['--exp-first']:
+    if opts['--firsthash']:
         d=firsthash(frames[0],dims, removedupes=True);
-        dump_pickle(opts['--exp-first'], d);
+        dump_pickle(opts['--firsthash'], d);
         frames[:] = [addhash(frame,d,removedupes=True) for frame in frames];
-    elif opts['--exp-d']:
-        d = readfile(opts['--exp-d'],dumpfull=True);
+    elif opts['--hash']:
+        d = readfile(opts['--hash'],dumpfull=True);
         frames[:] = [addhash(frame,d,removedupes=True) for frame in frames];
     #outputting.
     if opts['--hdf']:
