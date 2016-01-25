@@ -1,7 +1,7 @@
 lspreader
 =========
 
-A set of readers for the plasma code LSP's outputs.
+A set of readers and scripts for the plasma code LSP's outputs.
 
 Prerequisites
 -------------

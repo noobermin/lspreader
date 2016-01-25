@@ -9,7 +9,8 @@ Options:
     --numrx=N -n N     The regex for numbers. [default: ([0-9]+).p4 ]
 '''
 from docopt import docopt;
-from .. import flds,misc,lspreader;
+from lspreader import flds,misc
+from lspreader import lspreader.read as read;
 import re;
 import numpy as np;
 import matplotlib.pyplot as plt;
@@ -35,10 +36,10 @@ flabels = ['Ex','Ey','Ez','Bx','By','Bz'];
 slabels = ['RhoN{}'.format(i) for i in range(1,12)];
 for i,(ff,sf,t) in enumerate(zip(flds,sclr,tracktime)):
     print("reading {} and {}".format(ff,sf));
-    fd=lspreader.read(ff,var=flabels,
-                      gzip=True, remove_edges=True);
-    sd=lspreader.read(sf,var=slabels,
-                      gzip=True, remove_edges=True);
+    fd=read(ff,var=flabels,
+            gzip=True, remove_edges=True);
+    sd=read(sf,var=slabels,
+            gzip=True, remove_edges=True);
     if i == 0:
         s = np.lexsort((fd['z'],fd['y'],fd['x']));
     fd = flds.rect_flds(fd,s);
