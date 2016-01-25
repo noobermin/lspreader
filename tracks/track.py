@@ -23,10 +23,10 @@ flds = [file for file in files
          if fldsrx.match(file) ];
 sclr = [file for file in files
          if sclrrx.match(file) ];
-print(opts['--numrx']);quit();
-nums = [numrx.match(file).group(1)
+nums = [numrx.match(file)
         for file in files
-        if numrx.match(file) ];
+        if numrx.match(file) ]
+print(nums);quit();
 s=np.argsort(nums);
 flds[:] = np.array(flds)[s];
 sclr[:] = np.array(sclr)[s];
