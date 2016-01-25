@@ -46,10 +46,10 @@ for i,(ff,sf,t) in enumerate(zip(ffs,sfs,tracktime)):
     sd=read(sf,var=slabels,
             gzip=True, remove_edges=True);
     if i == 0:
-        s = np.lexsort((fd['z'],fd['y'],fd['x']));
+        srt = flds.firstsort(d);
     print("  recting sclrs and flds");
-    fd = flds.rect(fd,s);
-    sd = flds.rect(sd,s);
+    fd = flds.sort(fd,srt);
+    sd = flds.sort(sd,srt);
     td=tracks[:i]
     print("  making output");
     out = {sl:sd[sl] for sl in slabels};
@@ -62,6 +62,6 @@ for i,(ff,sf,t) in enumerate(zip(ffs,sfs,tracktime)):
     out.update(
         {'time':t });
     print(" saving");
-    np.savez_compressed('tracks/data{}'.format(i),**out);
+    np.savez('tracks/data{}'.format(i),**out);
     print("saved");
 
