@@ -79,3 +79,13 @@ def h5w(file,d,group='/',compression=None):
         group.create_dataset(
             k, data=d[k],  compression=cmp)
     pass;
+
+def subcall(cmd):
+    return subprocess.check_output(cmd).split('\n');
+
+def filelines(fname,strip=False):
+    with open(fname,'r') as f:
+        lines = f.readlines();
+    if strip:
+        lines[:] = [line.strip() for line in lines]
+    return lines;

@@ -4,7 +4,9 @@ Reader for LSP output xdr files (.p4's)
 '''
 import xdrlib as xdr;
 import numpy as np;
+import gzip;
 from misc import test;
+
 #get basic dtypes
 def get_int(file,N=1,forcearray=False):
     ret=np.fromfile(file,dtype='>i4',count=N);
@@ -60,8 +62,12 @@ def get_header(file,**kw):
     '''
     if type(file) == str:
         #if called with a filename, recall with opened file.
-        with open(file,'r') as f:
-            return get_header(f,**kw);
+        if test(kw, "gzip"):
+            with gzip.open(file,'r') as f:
+                return get_header(f,**kw);
+        else:
+            with open(file,'r') as f:
+                return get_header(f,**kw);
     if test(kw, "size"):
         size = file.tell();
     header = get_dict(
@@ -111,9 +117,6 @@ def get_header(file,**kw):
     return header;
 
 def read_flds(file, header, var, vprint, vector=True,remove_edges=False):
-    '''
-    Read a flds file. Do not call directly
-    '''
     if vector:
         size=3;
         readin = set();
@@ -237,6 +240,7 @@ def read(fname,**kw):
     override --  (type, start) => A tuple of a dump type and a place to start
                  in the passed file, useful to attempting to read semicorrupted
                  files.
+    gzip     --  Read as a gzip file.
 
     flds/sclr Specific Arguments:
     -----------------------------
@@ -246,7 +250,8 @@ def read(fname,**kw):
     remove_edges -- If set to truthy, then remove the edges from domains before
                     concatenation.
     '''
-    with open(fname,'rb') as file:
+    openf = gzip.open if test(kw, 'gzip') else open;
+    with openf(fname,'rb') as file:
         if test(kw,'override'):
             dump, start = kw['override'];
             file.seek(start);
