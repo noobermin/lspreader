@@ -22,6 +22,7 @@ Options:
 from docopt import docopt;
 from lspreader import lspreader as rd;
 from lspreader.pext import add_quantities;
+import numpy as np;
 
 def _vprint(s):
     print(s);
@@ -70,7 +71,10 @@ elif num_of_coords ==3:
         coords = ['x','z','y'];
     else:
         coords = ['x','y','z'];
-d = add_quantities(d, coords);
+
+massE = float(opts['--massE']) if opts['--massE'] else None;
+
+d = add_quantities(d, coords, massE=massE);
 if opts['--dict']:
     d = {k:d[k] for k in d.dtype.names};
     from misc import dump_pickle;
