@@ -15,7 +15,7 @@ Options:
     --Z -z                    Use Z.
     --late-time=TIME -l TIME  Cut out after this time.
     --reverse -r              Reverse Y and Z.
-    --massE=ME                Rest energy of the particle.
+    --massE=ME                Rest energy of the particle. [default: 0.511e6]
     --verbose -v              Print verbose.
     --dict -d                 Output a dict instead of a recarray.
 '''
