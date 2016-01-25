@@ -26,6 +26,6 @@ def firstsort(d):
     Perform a lexsort and return the sort indices and shape as a tuple.
     '''
     shape = [ len( np.unique(d[l]) )
-              for l in dims ];
+              for l in ['xs', 'ys', 'zs'] ];
     si = np.lexsort((d['z'],d['y'],d['x']));
     return si,shape;
