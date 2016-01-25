@@ -20,27 +20,31 @@ Options:
   --e-step=ESTEP              Set the step of grid lines for Energy.
   --high-res -H               Output a high resolution plt.
   --max-q=MAXQ -q MAXQ        Set the maximum for the charge (pcolormesh's vmax value).
+  --min-q=MINQ                Set a minimum charge.
   --normalize -n              Normalize the histogram to 1 *eV^-1 rad^-1 .
   --factor=F -f F             Multiply histogram by F. [default: 1.0]
   --polar -p                  Plot polar angles, letting the east direction be forward.
-  --oap=ANGLE -o ANGLE        Set the width angle of the OAP. [default: 49.0]
+  --oap=ANGLE -o ANGLE        Set the width angle of the OAP. [default: 50.47]
+  --log10 -l                  Plot a logarithmic pcolor instead of a linear one.
+  --cmap=CMAP                 Use the following cmap [default: pastel_clear].
+  --e-direction=ANGLE         The angle for the radial labels.
+  --e-units=UNIT              The units for the radial labels.
+  --interval=I                Set animate interval. [default: 100]
 '''
+from docopt import docopt;
 import numpy as np;
 import matplotlib.pyplot as plt;
-import cPickle as pickle;
-from matplotlib import colors;
 import matplotlib.animation as anim;
-from docopt import docopt;
-from misc import conv,test;
-from cmaps import pastel,pastel_b2r;
-from angular import angular,prep;
+from lspreader.plot.angular import _prep,angular
 
 opts = docopt(__doc__,help=True);
-s,phi,e,kw,d = prep(opts);
+s,phi,e,kw,d = _prep(opts);
 
 tstep = float(opts['--timestep']);
 ti    = float(opts['--initial-time']);
 mt    = float(opts['--minus-time']);
+
+interval=float(opts['--interval']);
 #process by times.
 good = np.argsort(d['t'])
 s   = s[good];
@@ -69,7 +73,9 @@ def animate(ii):
     t.set_text('t = {:3.2f}e-4 ns'.format((tbins[j]-mt)*1e4));
     return surf;
 
-a=anim.FuncAnimation(fig, animate, list(enumerate(Is[1:])),interval=0.1);
+a=anim.FuncAnimation(fig, animate,
+                     list(enumerate(Is[1:])),
+                     interval=interval);
 if opts['<output>']:
     a.save(opts['<output>'],fps=15);
 else:

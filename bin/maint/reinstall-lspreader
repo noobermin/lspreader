@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+DOC="WORST SCRIPT EVER... reinstall the lspreader script for quick development.
+I WILL NOT PROMPT YOU FOR REINSTALLING, USE AT YOUR OWN RISK.
+
+usage: ./reinstall-lspreader [lspreader-git-dir]"
+
+[ "$1" == "-h" ] || [ "$1" == "--help" ] && echo "$DOC" && exit 0
+
+RDDIR=$( [ -n "$1" ] && echo "$1" || echo "../../" )
+cd $RDDIR
+yes | pip uninstall lspreader
+pip install --user "$(pwd)"

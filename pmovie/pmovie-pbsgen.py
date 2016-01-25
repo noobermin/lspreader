@@ -18,6 +18,7 @@ Options:
                                unreachable for this script.
     --dotlsp=DOT -. DOT        Supply a .lsp file if it is unreachable for this
                                script.
+    --conda=CONDAFILE          Specify file to source for lspreader and others. [default: $HOME/conda]
 '''
 import subprocess;
 import numpy as np;
@@ -81,6 +82,7 @@ try:
 except KeyError as k:
     print('Invalid server "{}"'.format(k));
     exit(1);
+condafile=opts['--conda'];
 
 #template for PBS script output
 headert='''
@@ -91,7 +93,7 @@ headert='''
 #PBS -N pmovie-conv-{post}
 
 source $HOME/.bashrc
-source $HOME/conda
+source {condafile}
 LOGFILE=$PBS_O_WORKDIR/pmovie-conv-{post}.log
 MAXPROC={maxproc}
 WORKDIR={workdir}
@@ -207,7 +209,8 @@ header = headert.format(
     hours=hours,mins=mins,ppn=ppn,
     ramsesnode=ramsesnode,post=post,
     workdir=workdir,
-    maxproc=maxproc);
+    maxproc=maxproc,
+    condafile=condafile);
 #conversion
 #creating pbs script.
 convert_first = convertt_first.format(

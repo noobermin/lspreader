@@ -11,7 +11,6 @@ Options:
 '''
 
 import numpy as np;
-#from misc import readfile;
 from functools import reduce;
 from docopt import docopt;
 

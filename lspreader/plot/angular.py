@@ -227,3 +227,66 @@ def angular(s, phi, e,
         else:
             plt.title(kw['rtitle'],loc='right',fontdict={'fontsize':22});
     return (surf, ax, fig, (phi_bins, E_bins));
+
+#this is garbage. Done for compatibility/code share with angularmov.py
+
+def _prep(opts):
+    '''Prep from options'''
+    inname = opts['<input>'];
+    kev = opts['--keV'];
+    def getdef_kev(label):
+        
+        if kev:
+            return defaults[label+'_kev'];
+        else:
+            return defaults[label];
+    kw = {
+        'angle_bins' : float(opts['--angle-bins']),
+        'energy_bins': float(opts['--energy-bins']),
+        'max_e': float(opts['--max-e']) if opts['--max-e'] else (
+            getdef_kev('max_e')),
+        'max_q': float(opts['--max-q']) if opts['--max-q'] else None,
+        'min_q': float(opts['--min-q']) if opts['--min-q'] else None,
+        'keV': kev,
+        'clabel' : opts['--clabel'],
+        'colorbar' : not opts['--no-cbar'],
+        'e_step' : float(opts['--e-step']) if opts['--e-step'] else None,
+        'labels': 'tdefault' if opts['--polar'] else 'default',
+        'rtitle':opts['--rtitle'],
+        'ltitle':opts['--ltitle'],
+        'oap': float(opts['--oap']) if opts['--oap'] != 'none' else None,
+        'log_q': opts['--log10'],
+    };
+    cmap = _str2cmap(opts['--cmap']);
+    if not cmap:
+        cmap = opts['--cmap'];
+    kw['cmap'] = cmap;
+    kw['rgridopts'] = {};
+    if opts['--e-direction']:
+        kw['rgridopts'].update({'angle':opts['--e-direction']});
+    if opts['--e-units']:
+        kw['rgridopts'].update({'unit':opts['--e-units']});
+    if opts['--normalize']:
+        kw['clabel'] += defaults['norm_units'];
+
+    #end of setting up kws into angular.
+    #this deals with pre-processing.
+    s,phi,e,d = angular_load(
+        inname,
+        F=float(opts['--factor']),
+        normalize=kw if opts['--normalize'] else None,
+        polar=opts['--polar'], keV=kev)
+    return s,phi,e,kw,d;
+
+def _str2cmap(i):    
+    if i == 'viridis_clear':
+        return viridis_clear;
+    elif i == 'plasma_clear':
+        return plasma_clear;
+    elif i == 'magma_clear_r':
+        return magma_clear_r;
+    elif i == 'pastel_clear':
+        return pastel_clear;
+    elif i == 'pastel':
+        return pastel;
+    pass;

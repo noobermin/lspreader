@@ -24,67 +24,20 @@ Options:
   --polar -p                  Plot polar angles, letting the east direction be forward.
   --oap=ANGLE -o ANGLE        Set the width angle of the OAP. [default: 50.47]
   --log10 -l                  Plot a logarithmic pcolor instead of a linear one.
-  --cmap=CMAP                 Use the following cmap [default: pastel].
+  --cmap=CMAP                 Use the following cmap [default: pastel_clear].
   --e-direction=ANGLE         The angle for the radial labels.
   --e-units=UNIT              The units for the radial labels.
   --agg                       Use the agg backend.
 '''
 
-import cPickle as pickle;
 from docopt import docopt;
-from lspreader.plot.angular import angular_load, angular, defaults;
-
-def prep(opts):
-    '''I put this here in order to reuse this'''
-    inname = opts['<input>'];
-    kev = opts['--keV'];
-    def getdef_kev(label):
-        
-        if kev:
-            return defaults[label+'_kev'];
-        else:
-            return defaults[label];
-    kw = {
-        'angle_bins' : float(opts['--angle-bins']),
-        'energy_bins': float(opts['--energy-bins']),
-        'max_e': float(opts['--max-e']) if opts['--max-e'] else (
-            getdef_kev('max_e')),
-        'max_q': float(opts['--max-q']) if opts['--max-q'] else None,
-        'min_q': float(opts['--min-q']) if opts['--min-q'] else None,
-        'keV': kev,
-        'clabel' : opts['--clabel'],
-        'colorbar' : not opts['--no-cbar'],
-        'e_step' : float(opts['--e-step']) if opts['--e-step'] else None,
-        'labels': 'tdefault' if opts['--polar'] else 'default',
-        'rtitle':opts['--rtitle'],
-        'ltitle':opts['--ltitle'],
-        'oap': float(opts['--oap']) if opts['--oap'] != 'none' else None,
-        'log_q': opts['--log10'],
-    };
-    cmap = _str2cmap(opts['--cmap']);
-    if not cmap:
-        cmap = opts['--cmap'];
-    kw['cmap'] = cmap;
-    kw['rgridopts'] = {};
-    if opts['--e-direction']:
-        kw['rgridopts'].update({'angle':opts['--e-direction']});
-    if opts['--e-units']:
-        kw['rgridopts'].update({'unit':opts['--e-units']});
-    if opts['--normalize']:
-        kw['clabel'] += defaults['norm_units'];
-
-    #end of setting up kws into angular.
-    #this deals with pre-processing.
-    s,phi,e,d = angular_load(
-        inname,
-        F=float(opts['--factor']),
-        normalize=kw if opts['--normalize'] else None,
-        polar=opts['--polar'], keV=kev)
-    return s,phi,e,kw,d;
+import numpy as np;
+from lspreader.plot.angular import angular,_prep;
+import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     opts=docopt(__doc__,help=True);
-    s,phi,e,kw,_ = prep(opts);
+    s,phi,e,kw,_ = _prep(opts);
     if opts['<output>'] and opts['--agg']:
         plt.change_backend('agg');
     angular(s,phi,e,**kw);
@@ -94,6 +47,5 @@ if __name__ == "__main__":
         else:
             plt.savefig(opts['<output>']);
     else:
-        plt.show();
-    
+        plt.show();    
     pass;

@@ -61,8 +61,8 @@ USEZ=$([ -n "$(cat *.lsp | grep "z-cells")" ] && echo "z" || echo "")
 [ -n "$MAXTIME" ] && TIMEARG="-l $MAXTIME"
 
 DIMS=-$USEX$USEY$USEZ
-cp $RDDIR/lspreader.py $RDDIR/misc.py $RDDIR/pext.py $RDDIR/cmaps.py \
-   $RDDIR/pext/angular.py $RDDIR/pext/quantities.py $RDDIR/arrcat.py \
+cp $RDDIR/bin/pext.py $RDDIR/bin/arrcat.py \
+   $RDDIR/pext/angular.py $RDDIR/pext/quantities.py \
    .
 echo "\
 #!/usr/bin/env bash
@@ -88,3 +88,5 @@ chmod +x gen
 ./gen
 
 ./angular.py --agg -n pext.npy angular.png
+#hacking time
+#SPOTSIZE=

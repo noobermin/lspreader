@@ -19,6 +19,8 @@ Options:
                          filter on the pmovies before creating the final trajectories
                          file. Defaults to Escan.py
     -o SCANOPTS          Passes this string as an option to the scan script.
+    -c CONDAFILE         File to source for conda. This should be a conda with
+                         lspreader installed.
 "
 NODES=1
 SERVER="ramses"
@@ -27,7 +29,7 @@ CONDA="/home/ngirmang.1/conda"
 RAMSESNODE=
 SCANSCRIPT="Escan.py"
 SCANOPTS=
-while getopts ':hS:s:N:o:' opt; do
+while getopts ':hS:s:N:o:c:' opt; do
       case $opt in
           h)
               echo "$USAGE"
@@ -57,6 +59,10 @@ while getopts ':hS:s:N:o:' opt; do
               SCANOPTS=$OPTARG
               shift $((OPTIND-1))
               ;;
+          c)
+              CONDA=$OPTARG
+              shift $((OPTIND-1))
+              ;;
           \?)
               echo "Invalid option: $OPTARG">&2
               exit 1
@@ -79,10 +85,10 @@ if [ -n "$( echo "$DEST" | grep \: )" ]; then
     RAMSESNODE=$(echo "$DEST" | sed 's/@\{0,1\}\([A-Z,a-z,0-9]\+\):.*/\1/');
 fi
 #copying files to the working directory
-rcp $RDDIR/lspreader.py $RDDIR/misc.py $RDDIR/pmov.py \
-    $RDDIR/pmovie-reader/search.py $RDDIR/pmovie-reader/gather.py \
-    $RDDIR/pmovie-reader/traj.py $RDDIR/pmovie-reader/orig.py \
-    $RDDIR/pmovie-reader/scan/$SCANSCRIPT \
+rcp $RDDIR/bin/pmov.py \
+    $RDDIR/pmovie/search.py $RDDIR/pmovie/gather.py \
+    $RDDIR/pmovie/traj.py $RDDIR/pmovie/orig.py \
+    $RDDIR/pmovie/scan/$SCANSCRIPT \
     $DEST
 #copying the pmovie-pbsgen.py generator to the directory to make the pbs script
 rcp $RDDIR/pmovie-reader/pmovie-pbsgen.py $OUTDIR/
