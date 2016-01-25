@@ -25,7 +25,7 @@ flds = [file for file in files
          if fldsrx.match(file) ];
 sclr = [file for file in files
          if sclrrx.match(file) ];
-nums = [numrx.match(file)
+nums = [int(numrx.match(file).group(1))
         for file in flds
         if numrx.match(file) ];
 print(nums);quit();
