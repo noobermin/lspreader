@@ -10,6 +10,7 @@ setup(name='lspreader',
       packages=['lspreader'],
       install_requires=[
           'numpy>=1.10.1',
-          'scipy>=0.16.0'
+          'scipy>=0.16.0',
+          'h5py>=2.5.0'
       ],
       zip_safe=False)
