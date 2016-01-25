@@ -9,7 +9,7 @@ def rect(d,s=None):
                if key not in dims ];
     shape = [ len( np.unique(d[l]) )
               for l in dims ];
-    if not s:
+    if s is not None:
         s = np.lexsort((d['z'],d['y'],d['x']));
     for l in labels:
         d[l] = d[l][s].reshape(shape);
