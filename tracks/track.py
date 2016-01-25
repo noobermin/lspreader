@@ -10,7 +10,7 @@ Options:
 '''
 from docopt import docopt;
 from lspreader import flds,misc
-from lspreader import lspreader.read as read;
+from lspreader import read;
 import re;
 import numpy as np;
 import matplotlib.pyplot as plt;
