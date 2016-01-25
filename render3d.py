@@ -30,7 +30,7 @@ import cPickle as pickle;
 from docopt import docopt;
 import re;
 import math;
-from misc import conv,readfile;
+from lspreader.misc import conv,readfile;
 from tvtk.util.ctf import ColorTransferFunction, PiecewiseFunction;
 
 def main():

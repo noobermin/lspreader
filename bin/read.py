@@ -4,8 +4,8 @@ Extract data directly.
 
 Usage: read.py <input> <output>
 '''
-import lspreader as rd;
-from misc import dump_pickle;
+from lspreader import lspreader as rd;
+from lspreader.misc import dump_pickle;
 from docopt import docopt;
 
 opts = docopt(__doc__,help=True);

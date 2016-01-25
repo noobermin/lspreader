@@ -5,5 +5,15 @@ A set of readers for the plasma code LSP's outputs.
 
 Prerequisites
 -------------
+* `numpy>=1.10.1`
+* `scipy>=0.16.0`
+* `docopt` -- for scripts.
 
-Currently, the only prerequisite that these scripts generally need is `docopt`, which you can find through `pip` or your package manager. `docopt` is awesome, shame on you if you don't have it already :)
+Install
+-------
+
+Using `pip`, and installing locally,
+
+    git pull https://github.com/noobermin/lspreader.git
+    cd lspreader
+    pip install . --user

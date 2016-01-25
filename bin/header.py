@@ -11,7 +11,7 @@ Options:
   --size -s               Output the size of the header in bytes.
 '''
 
-import lspreader as rd;
+from lspreader import lspreader as rd;
 import cPickle;
 import numpy as np;
 import matplotlib.pyplot as plt;

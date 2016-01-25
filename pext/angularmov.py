@@ -7,7 +7,7 @@ Usage:
 
 Options:
   --angle-bins=BINS -a BINS   Set the number of angle bins.  [default: 180]
-  --radial-bins=BINS -r BINS  Set the number of radial bins. [default: 40]
+  --energy-bins=BINS -r BINS  Set the number of energy bins. [default: 40]
   --ltitle=TITLE -t TITLE     Set the title.
   --rtitle=TITLE -T TITLE     Set the right title.
   --clabel=CLABEL -c CLABEL   Set colorbar label. [default: $p C$]
@@ -15,8 +15,8 @@ Options:
   --initial-time=T -i T       Set initial timestep in ns. [default: 0]
   --minus-time=T -m T         Subtract this time. [default: 0]
   --no-cbar                   Turn off the colorbar.
-  --KeV -k                    Scale by 100s of KeV instead of MeV.
-  --max-e=MAXE -e MAXE        Set the maximum energy value (in units depending on --KeV flag)
+  --keV -k                    Scale by 100s of KeV instead of MeV.
+  --max-e=MAXE -e MAXE        Set the maximum energy value (in units depending on --keV flag)
   --e-step=ESTEP              Set the step of grid lines for Energy.
   --high-res -H               Output a high resolution plt.
   --max-q=MAXQ -q MAXQ        Set the maximum for the charge (pcolormesh's vmax value).
@@ -76,6 +76,3 @@ else:
     plt.show();
 pass;
     
-
-#if __name__ == "__main__":
-#    main();
