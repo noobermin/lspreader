@@ -275,8 +275,11 @@ def read(fname,**kw):
             else:
                 remove_edges=False;
         readers = {
-            2: lambda: read_flds(file,header,var, vprint, remove_edges=remove_edges),
-            3: lambda: read_sclr(file,header,var, vprint, remove_edges=remove_edges),
+            2: lambda: read_flds(
+                file,header,var, vprint, remove_edges=remove_edges),
+            3: lambda: read_flds(
+                file,header,var, vprint,
+                remove_edges=remove_edges,vector=False),
             6: lambda: read_movie(file, header),
             10:lambda: read_pext(file,header)
         };
