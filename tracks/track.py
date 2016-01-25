@@ -34,8 +34,6 @@ sclr[:] = np.array(sclr)[s];
 tracksf=np.load(opts['--track']);
 tracks    = tracksf['data'];
 tracktime = tracksf['time'];
-print(flds[:16]);
-quit();
 flabels = ['Ex','Ey','Ez','Bx','By','Bz'];
 slabels = ['RhoN{}'.format(i) for i in range(1,12)];
 for i,(ff,sf,t) in enumerate(zip(flds,sclr,tracktime)):
@@ -60,6 +58,6 @@ for i,(ff,sf,t) in enumerate(zip(flds,sclr,tracktime)):
         {'tracks':td});
     out.update(
         {'time':t });
-    np.savez_compressed('data{}'.format(i),**out);
+    np.savez_compressed('tracks/data{}'.format(i),**out);
     print("saved");
 
