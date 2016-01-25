@@ -36,6 +36,8 @@ tracktime = tracksf['time'];
 flabels = ['Ex','Ey','Ez','Bx','By','Bz'];
 slabels = ['RhoN{}'.format(i) for i in range(1,12)];
 for i,(ff,sf,t) in enumerate(zip(flds,sclr,tracktime)):
+    if i>15:
+        break;
     print("reading {} and {}".format(ff,sf));
     fd=read(ff,var=flabels,
             gzip=True, remove_edges=True);
