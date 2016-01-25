@@ -108,7 +108,7 @@ PMOVDIR=$WORKDIR/pmovie-conv
 [ ! -d $PMOVDIR ] && mkdir $PMOVDIR;
 
 FIRSTPMOV={firstfile}
-./pmov.py {convopts} -D $PMOVDIR --exp-first=./hash.d $FIRSTPMOV
+./pmov.py {convopts} -D $PMOVDIR --firsthash=./hash.d $FIRSTPMOV
 #get first file in case first file has multiple frames
 
 FIRSTNPZ=$(ls $PMOVDIR | grep '{firstfile}.*\.npz$' | head -n 1)
@@ -123,7 +123,7 @@ for i in $FILES; do
     while [ $(pgrep -f pmov.py  |  wc -l ) -ge $MAXPROC ]; do sleep 5; done; 
     echo "convert: running $i">>$LOGFILE
     sleep 0.2;
-    ./pmov.py {convopts} -D pmovie-conv  --exp-d=./hash.d $i &
+    ./pmov.py {convopts} -D pmovie-conv  --hash=./hash.d $i &
 done
 
 while [ $(pgrep -f pmov.py | wc -l) -gt 0 ]; do

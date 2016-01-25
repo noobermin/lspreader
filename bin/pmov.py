@@ -16,10 +16,10 @@ Options:
     --zip -c          Use compression for hdf5.
     --verbose -v      Be verbose.
     --lock=L -l L     Specify a lock file for synchronized output for hdf5.
-    --exp-d=DFILE     Experimental hashing. It might work only for uniform
+    --hash=HFILE      Hashing. It might work only for uniform
                       grids. Specify specification file used to generate hash
-                      as DFILE.
-    --exp-first=DFILE Experimental hashing, see above. Use this file as the
+                      as HASHFILE.
+    --firsthash=HFILE Specify first hashing, see above. Use this file as the
                       first file to generate the hash specification from and
                       output to DFILE.
     --dir=D -D D      Output to this directory if given not <output> name.
