@@ -33,11 +33,16 @@ tracktime = tracksf['time'];
 
 flabels = ['Ex','Ey','Ez','Bx','By','Bz'];
 slabels = ['RhoN{}'.format(i) for i in range(1,12)];
-
 for i,(ff,sf,t) in enumerate(zip(flds,sclr,tracktime)):
     print("reading {} and {}".format(ff,sf));
-    fd=lspreader.read(ff,var=flabels, gzip=True);
-    sd=lspreader.read(sf,var=slabels, gzip=True);
+    fd=lspreader.read(ff,var=flabels,
+                      gzip=True, remove_edges=True);
+    sd=lspreader.read(sf,var=slabels,
+                      gzip=True, remove_edges=True);
+    if i == 0:
+        s = np.lexsort((fd['z'],fd['y'],fd['x']));
+    fd = flds.rect_flds(fd,s);
+    sd = flds.rect_flds(sd,s);
     td=tracks[:i]
     out = {sl:sd[sl] for sl in slabels};
     out.update(
