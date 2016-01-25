@@ -6,7 +6,7 @@ Usage:
 Options:
     --help -h
     --track=T -t T     Specify track file.
-    --numrx=N -n N     The regex for numbers. [default: .*([0-9]+)\.p4 ]
+    --numrx=N -n N     The regex for numbers. [default: .*([0-9]+).p4 ]
 '''
 from docopt import docopt;
 from lspreader import flds,misc
