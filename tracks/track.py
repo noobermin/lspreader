@@ -14,7 +14,8 @@ from lspreader import read;
 import re;
 import numpy as np;
 import matplotlib.pyplot as plt;
-files=subcall(('ls'))
+opts = docopt(__doc__,help=True);
+files=misc.subcall(('ls'))
 fldsrx=re.compile(opts['<fldsrx>']);
 sclrrx=re.compile(opts['<sclrrx>']);
 numrx=re.compile(opts['--numrx']);
