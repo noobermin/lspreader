@@ -23,7 +23,7 @@ flds = [file for file in files
          if fldsrx.match(file) ];
 sclr = [file for file in files
          if sclrrx.match(file) ];
-print(flds);quit();
+print(opts['--numrx']);quit();
 nums = [numrx.match(file).group(1)
         for file in files
         if numrx.match(file) ];
