@@ -77,8 +77,8 @@ done
 source $CONDA
 DEST=$( [ -n "$1" ] && echo $1)
 [ -z "$DEST" ] && echo $USAGE && exit 1;
-[ -n "$2" ]  && RDDIR="$2";
-OUTDIR=$( [ -n "$3" ] && echo $3 ||  echo "." )
+OUTDIR=$( [ -n "$2" ] && echo $2 ||  echo "." )
+[ -n "$3" ]  && RDDIR="$3";
 
 #checking for remote node
 if [ -n "$( echo "$DEST" | grep \: )" ]; then
