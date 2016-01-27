@@ -31,7 +31,6 @@ while getopts ':hrt:' opt; do
               ;;
           t)
               MAXTIME=$OPTARG
-              shift $((OPTIND-1))
               ;;
           r)
               REVERSE="-r"
@@ -46,6 +45,8 @@ while getopts ':hrt:' opt; do
               ;;
       esac
 done
+shift "$((OPTIND-1))"
+
 source $CONDA
 PEXTDIR=$( [ -n "$1" ] && echo $1 || echo "." )
 [ -n "$2" ]  && RDDIR="$2";
