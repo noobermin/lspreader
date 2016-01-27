@@ -91,7 +91,7 @@ rcp $RDDIR/bin/pmov.py \
     $RDDIR/pmovie/scan/$SCANSCRIPT \
     $DEST
 #copying the pmovie-pbsgen.py generator to the directory to make the pbs script
-rcp $RDDIR/pmovie-reader/pmovie-pbsgen.py $OUTDIR/
+rcp $RDDIR/pmovie/pmovie-pbsgen.py $OUTDIR/
 if [ $SERVER == "ramses" ] && [ -n "$RAMSESNODE" ]; then
     DIRONNODE=$(echo "$DEST" | sed 's/@\{0,1\}[A-Z,a-z,0-9]\+:\(.*\)/\1/');
     rsh $RAMSESNODE ls "$DIRONNODE">.lsfiles
