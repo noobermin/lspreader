@@ -160,8 +160,12 @@ done
 gathert='''
 #now, gather the matches
 echo "gathering searches at $(date)">>$LOGFILE
-./gather.py -ui ./orig.npy $SCANDIR'found.*.npy' $SCANDIR/selected.npy &>>$LOGFILE
-rm "$SCANDIR/found*.npy
+cp gather.py orig.npy $SCANDIR/
+cd $SCANDIR
+./gather.py -ui ./orig.npy 'found.*.npy' selected &>>$LOGFILE
+# uncomment if you want to clear temporary files
+# rm "found*.npy"
+cd  ..
 '''
 #trajectory finding
 searcht='''
@@ -184,14 +188,18 @@ done
 trajt='''
 echo "gathering for trajectories $(date)">>$LOGFILE
 #finally, we gather trajectories
-./traj.py $SCANDIR/'traj.*.npz' trajectories >>$LOGFILE
-rm  $SCANDIR/*.npz $SCANDIR/selected.npy
+cp traj.py $SCANDIR/
+cd $SCANDIR
+./traj.py 'traj.*.npz' trajectories >>$LOGFILE
+# uncomment if you want to clear temporary files
+# rm  traj*.npz selected.npy
 echo "done at $(date)">>$LOGFILE
 if [ -f tranjectories.npz ]; then
     echo "file is available at $HOSTNAME:$PWD/trajectories.npz"
 else
     echo "trajectories is not found, check the log for errors."
 fi;
+cd ..
 '''
 post = '0';
 xopts=''+dims_flag; #for copy so we don't write to dims_flag
