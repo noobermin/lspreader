@@ -37,17 +37,14 @@ while getopts ':hS:s:N:o:c:' opt; do
               ;;
           N)
               RAMSESNODE=$OPTARG
-              shift $((OPTIND-1))
               ;;
           s)
               SERVER=$OPTARG
-              shift $((OPTIND-1))
               ;;
           S)
               case $OPTARG in
                   Escan.py)
                       SCANSCRIPT=$OPTARG
-                      shift $((OPTIND-1))
                       ;;
                   *)
                       echo "Invalid scanner: $OPTARG">&2
@@ -57,11 +54,9 @@ while getopts ':hS:s:N:o:c:' opt; do
               ;;
           o)
               SCANOPTS=$OPTARG
-              shift $((OPTIND-1))
               ;;
           c)
               CONDA=$OPTARG
-              shift $((OPTIND-1))
               ;;
           \?)
               echo "Invalid option: $OPTARG">&2
@@ -73,12 +68,13 @@ while getopts ':hS:s:N:o:c:' opt; do
               ;;
       esac
 done
+shift "$((OPTIND-1))"
 
 source $CONDA
 DEST=$( [ -n "$1" ] && echo $1)
 [ -z "$DEST" ] && echo $USAGE && exit 1;
-[ -n "$2" ]  && RDDIR="$2";
-OUTDIR=$( [ -n "$3" ] && echo $3 ||  echo "." )
+OUTDIR=$( [ -n "$2" ] && echo $2 ||  echo "." )
+[ -n "$3" ]  && RDDIR="$3";
 
 #checking for remote node
 if [ -n "$( echo "$DEST" | grep \: )" ]; then
@@ -91,7 +87,7 @@ rcp $RDDIR/bin/pmov.py \
     $RDDIR/pmovie/scan/$SCANSCRIPT \
     $DEST
 #copying the pmovie-pbsgen.py generator to the directory to make the pbs script
-rcp $RDDIR/pmovie-reader/pmovie-pbsgen.py $OUTDIR/
+rcp $RDDIR/pmovie/pmovie-pbsgen.py $OUTDIR/
 if [ $SERVER == "ramses" ] && [ -n "$RAMSESNODE" ]; then
     DIRONNODE=$(echo "$DEST" | sed 's/@\{0,1\}[A-Z,a-z,0-9]\+:\(.*\)/\1/');
     rsh $RAMSESNODE ls "$DIRONNODE">.lsfiles
