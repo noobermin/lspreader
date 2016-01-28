@@ -46,6 +46,10 @@ while getopts ':hS:s:N:o:c:' opt; do
                   Escan.py)
                       SCANSCRIPT=$OPTARG
                       ;;
+                  Escan-with-region.py)
+                      SCANSCRIPT=$OPTARG
+                      ;;
+                  
                   *)
                       echo "Invalid scanner: $OPTARG">&2
                       exit 1
