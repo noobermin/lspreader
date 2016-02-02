@@ -92,7 +92,8 @@ headert='''
 
 source $HOME/.bashrc
 source {condafile}
-LOGFILE=$PBS_O_WORKDIR/pmovie-conv-{post}.log
+LOGFILEDIR=$( [ -n "$PBS_O_WORKDIR" ] && echo "$PBS_O_WORKDIR" || echo . ])
+LOGFILE=$LOGFILEDIR/pmovie-conv-{post}.log
 MAXPROC={maxproc}
 WORKDIR={workdir}
 cd $WORKDIR
