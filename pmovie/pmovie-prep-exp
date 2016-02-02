@@ -15,7 +15,8 @@ Options:
     -N RAMSESNODE        Run only on the node RAMSESNODE. Usually, the generating
                          pbs script will run on a node specified in the <pmovie-dir>
                          argument.
-    -o SCANOPTS          Passes this string as an option to the scan script.
+    -S SCRIPT            Select a scan script. Either it is a file in the current
+                         directory or it is a file in lspreader.
     -c CONDAFILE         File to source for conda. This should be a conda with
                          lspreader installed.
 "
@@ -24,9 +25,7 @@ SERVER="ramses"
 RDDIR="/home/ngirmang.1/lspreader"
 CONDA="/home/ngirmang.1/conda"
 RAMSESNODE=
-SCANSCRIPT="Escan.py"
-SCANOPTS=
-while getopts ':hs:N:o:c:' opt; do
+while getopts ':hS:s:N:c:' opt; do
       case $opt in
           h)
               echo "$USAGE"
@@ -38,6 +37,18 @@ while getopts ':hs:N:o:c:' opt; do
           s)
               SERVER=$OPTARG
               ;;
+          S)
+              case $OPTARG in
+                  Escan.py)
+                      MYSCANSCRIPT=Escan.py
+                      ;;
+                  Escan-with-region.py)
+                      MYSCANSCRIPT=Escan-with-region.py
+                      ;;
+                  *)
+                      THEIRSCANSCRIPT=$OPTARG
+                      ;;
+              esac
           o)
               SCANOPTS=$OPTARG
               ;;
@@ -61,6 +72,15 @@ DEST=$( [ -n "$1" ] && echo $1)
 [ -z "$DEST" ] && echo $USAGE && exit 1;
 OUTDIR=$( [ -n "$2" ] && echo $2 ||  echo "." )
 [ -n "$3" ]  && RDDIR="$3";
+
+if [ -n "$MYSCANSCRIPT" ]; then
+    rcp $RDDIR/pmovie/scan/$MYSCANSCRIPT $DEST/scanner.py
+elif [ -n "$THEIRSCANSCRIPT" ] && [ -e "$THEIRSCANSCRIPT" ]; then
+    rcp $THEIRSCANSCRIPT $DEST/scanner.py
+else
+    echo "Didn't find the scan script:" $THEIRSCANSCRIPT
+    exit;
+fi
 
 #checking for remote node
 if [ -n "$( echo "$DEST" | grep \: )" ]; then
