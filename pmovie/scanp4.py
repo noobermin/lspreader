@@ -29,6 +29,6 @@ if __name__ == "__main__":
     hashd = readfile(opts['--hash'],dumpfull=True);
     np.save(
         opts['<output>'],
-        filter_hashes_from_file(opts['<input>'],hashd,
+        filter_hashes_from_file(opts['<input>'],hashd,f,
                                 removedups=True,
                                 gzip=opts['--gzip']));
