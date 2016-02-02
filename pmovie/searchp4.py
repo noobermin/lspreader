@@ -7,7 +7,7 @@ Usage:
 
 Options:
     --help -h                    Print this help.
-    --hash=HASHFILE -H HASHFILE  Read this hash file.
+    --hash=HASHFILE -H HASHFILE  Read this hash file. [default: hash.d]
     --gzip -Z                    Read gzipped files.
     --dir=D -D D                 Output to this directory.
 '''
@@ -35,7 +35,7 @@ for frame in frames:
     out['hash'] = -1;
     outbools= np.in1d(indices, data['hash']);
     out[outbools] = data;
-    outname = "{}.{}".format(opts['<input>'],frame['step']);
+    outname = "{}".format(frame['step']);
     if opts['--dir']:
         outname = '{}/{}'.format(opts['--dir'], outname);
     np.savez(outname, data=out, time=frame['time']);
