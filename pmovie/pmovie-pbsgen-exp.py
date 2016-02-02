@@ -111,12 +111,13 @@ FIRSTPMOV={firstfile}
 #get first file in case first file has multiple frames
 
 FIRSTNPZ=$(ls | grep '{firstfile}.*\.npz$' | head -n 1)
-./orig.py $FIRSTNPZ orig
+./orig.py $FIRSTNPZ orig>>$LOGFILE
+rm -v {firstfile}*.npz>>$LOGFILE
 '''
 
 scanp4t='''
 SCANDIR=pmovie-scan
-[ ! -d $PMOVDIR ] && mkdir $SCANDIR;
+[ ! -d $SCANDIR ] && mkdir $SCANDIR;
 
 echo "starting scanning at $(date)">>$LOGFILE
 #these are files other than the first
