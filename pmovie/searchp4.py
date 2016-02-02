@@ -9,6 +9,7 @@ Options:
     --help -h                    Print this help.
     --hash=HASHFILE -H HASHFILE  Read this hash file.
     --gzip -Z                    Read gzipped files.
+    --dir=D -D D                 Output to this directory.
 '''
 from docopt import docopt;
 opts=docopt(__doc__,help=True);
