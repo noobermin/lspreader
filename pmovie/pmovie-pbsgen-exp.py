@@ -206,7 +206,7 @@ scanp4 = scanp4t
 gather=gathert;
 search=searcht;
 traj =trajt;
-out = ''.join([header,convert_first,convert,scan,gather,search,traj]);
+out = ''.join([header,convert_first,scanp4,gather,search,traj]);
 
 with open(opts['--outdir']+'/pmovie-conv-'+post+'.pbs','w') as f:
     f.write(out);
