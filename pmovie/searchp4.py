@@ -38,4 +38,4 @@ for frame in frames:
     outname = "{}".format(frame['step']);
     if opts['--dir']:
         outname = '{}/{}'.format(opts['--dir'], outname);
-    np.savez(outname, data=out, time=frame['time']);
+    np.savez(outname, data=out, time=frame['t']);

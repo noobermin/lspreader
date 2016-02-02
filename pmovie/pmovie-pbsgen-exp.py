@@ -125,7 +125,7 @@ FILES=$(ls $WORKDIR | grep 'pmovie.*.p4.gz$')
 for i in $FILES; do
     while [ $(pgrep -f scanp4.py  |  wc -l ) -ge $MAXPROC ]; do sleep 5; done; 
     echo "scanp4: running $i">>$LOGFILE
-    OUTNAME="found$(echo $i | sed 's/^.*\([0-9]\+\)\.p4\.gz$/\1/')"
+    OUTNAME="$i.found"
     sleep 0.2;
     ./scanp4.py --gzip --hash=./hash.d $i $SCANDIR/$OUTNAME &
 done
