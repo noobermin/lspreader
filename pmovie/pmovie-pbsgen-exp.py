@@ -127,7 +127,7 @@ for i in $FILES; do
     echo "scanp4: running $i">>$LOGFILE
     OUTNAME="found$(echo $i | sed 's/^.*\([0-9]\+\)\.p4\.gz$/\1/')"
     sleep 0.2;
-    ./scanp4.py  --hash=./hash.d $i $SCANDIR/$OUTNAME &
+    ./scanp4.py --gzip --hash=./hash.d $i $SCANDIR/$OUTNAME &
 done
 
 while [ $(pgrep -f scanp4.py | wc -l) -gt 0 ]; do
