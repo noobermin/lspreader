@@ -30,5 +30,5 @@ if __name__ == "__main__":
     np.save(
         opts['<output>'],
         filter_hashes_from_file(opts['<input>'],hashd,f,
-                                removedups=True,
+                                removedupes=True,
                                 gzip=opts['--gzip']));

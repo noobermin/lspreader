@@ -112,12 +112,12 @@ def read_and_hash(fname, hashd, **kw):
     '''
     Read and process with hash dict hashd.
     '''
-    if 'removedups' in kw:
-        removedups = kw['removedups'];
-        del kw['removedups'];
+    if 'removedupes' in kw:
+        removedupes = kw['removedupes'];
+        del kw['removedupes'];
     else:
-        removedups = False;
-    return [addhash(frame, hashd, removedups=removedups)
+        removedupes = False;
+    return [addhash(frame, hashd, removedupes=removedupes)
             for frame in read(fname, **kw)];
 
 def filter_hashes_from_file(fname, hashd, f, **kw):
