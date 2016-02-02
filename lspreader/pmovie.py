@@ -4,7 +4,7 @@ pmovie reading functions
 
 import numpy as np;
 import numpy.lib.recfunctions as rfn;
-
+from . import read,misc;
 #
 # this is mainly hashing
 #
@@ -108,3 +108,32 @@ def sortframe(frame):
     frame['data']=d;
     return frame;
 
+def read_and_hash(fname, hashd, **kw):
+    '''
+    Read and process with hash dict hashd.
+    '''
+    if 'removedups' in kw:
+        removedups = kw['removedups'];
+        del kw['removedups'];
+    else:
+        removedups = False;
+    return [addhash(frame, hashd, removedups=removedups)
+            for frame in read(fname, kw**)];
+
+def filter_hashes_from_file(fname, hashd, f, **kw):
+    '''
+    Obtain good hashes from a .p4 file with the dict hashd and a
+    function that returns good hashes. Any keywords will be
+    sent to read_and_hash.
+
+    Parameters:
+    -----------
+
+    fname -- filename of file.
+    hashd -- hash dict.
+    f     -- function that returns a list of good hashes.
+    '''
+    return np.concatenate([
+        frame['data']['hash'][f(frame)]
+        for frame in read_and_hash(fname, hashd, **kw)
+    ]);
