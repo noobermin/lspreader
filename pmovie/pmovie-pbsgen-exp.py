@@ -41,7 +41,7 @@ if not opts['--filelist']:
 else:
     ls = filelines(opts['--filelist'],strip=True);
 # filtering for pmovies
-pmovierx=re.compile(r"pmovie([0-9]+).p4$");
+pmovierx=re.compile(r"pmovie([0-9]+).p4");
 lspmovies = [(s, int(pmovierx.match(s).group(1)))
              for s in ls if pmovierx.match(s)];
 lspmovies.sort(key=lambda i: i[1]);
