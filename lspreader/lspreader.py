@@ -207,7 +207,8 @@ def read_movie(file, header):
         N = d['pnum'];
         lt=[('ip','>i4')]+zip(params,['>f4']*nparams);
         file.seek(d['pos']);
-        arr=np.fromfile(file,dtype=np.dtype(lt),count=N);
+        arr=np.frombuffer(file.read(N*4*len(lt)),dtype=np.dtype(lt),count=N);
+        arr.flags.writeable = True;
         frames[i].update({'data':arr});
         del frames[i]['pos'];
     return frames;
