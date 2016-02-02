@@ -13,6 +13,7 @@ Options:
     --sort -s         Sort the pmovies by IPP.
     --hdf -H          Output to hdf5 instead of to a pickle file.
                       The group will be based on the step.
+    --gzip -Z         File is gzipped.
     --zip -c          Use compression for hdf5.
     --verbose -v      Be verbose.
     --lock=L -l L     Specify a lock file for synchronized output for hdf5.
@@ -53,7 +54,7 @@ if __name__=='__main__':
     if len(dims)==0:
         dims=['xi','yi','zi'];
     #reading in using the reader.
-    frames=rd.read(opts['<input>']);
+    frames=rd.read(opts['<input>'], gzip=opts['--gzip']);
     
     if opts['--sort']:
         vprint("sorting...");
