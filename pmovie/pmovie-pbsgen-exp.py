@@ -156,7 +156,7 @@ for i in $FILES; do
     while [ $(pgrep -f searchp4.py  |  wc -l ) -ge $MAXPROC ]; do sleep 5; done;
     echo "search: searching $i">>$LOGFILE
     sleep 0.2;
-    ./searchp4.py -D $SCANDIR $i $SCANDIR/selected.npy &
+    ./searchp4.py -ZD $SCANDIR $i $SCANDIR/selected.npy &
 done
 while [ $(pgrep -f searchp4.py | wc -l) -gt 0 ]; do
     echo "waiting for $(pgrep -f search.py | wc -l) process(es)">>$LOGFILE
