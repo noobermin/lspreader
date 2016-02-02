@@ -9,9 +9,7 @@ Options:
     --help -h                  Print this help.
     --nodes=N -n N             Number of utilized nodes. [default: 1]
     --server=SERVER            Tune for this server. [default: ramses]
-    --scanner=SCANSCRIPT       Use this scan script. [default: Escan.py]
     --conv-opts=OPTS           Add these opts to pmov.py. [default: ]
-    --scan-opts=OPTS           Add these opts to the chosen scanner. [default: ]
     --outdir=OUT -o OUT        Specify an output directory for pbsscripts [default: .]
     --ramses-node=NODE         Submit to a specific ramses node.
     --filelist=LS -l LS        Supply a directory listing if the directory is
@@ -106,11 +104,9 @@ cd $WORKDIR
 #conversion
 #convert first file
 convertt_first='''
-PMOVDIR=$WORKDIR/pmovie-conv
-[ ! -d $PMOVDIR ] && mkdir $PMOVDIR;
 
 FIRSTPMOV={firstfile}
-./pmov.py {convopts} -D $PMOVDIR --firsthash=./hash.d $FIRSTPMOV
+./pmov.py {convopts}  --firsthash=./hash.d $FIRSTPMOV
 #get first file in case first file has multiple frames
 
 FIRSTNPZ=$(ls $PMOVDIR | grep '{firstfile}.*\.npz$' | head -n 1)
@@ -118,6 +114,9 @@ FIRSTNPZ=$(ls $PMOVDIR | grep '{firstfile}.*\.npz$' | head -n 1)
 '''
 
 scanp4t='''
+SCANDIR=pmovie-scan
+[ ! -d $PMOVDIR ] && mkdir $SCANDIR;
+
 echo "starting scanning at $(date)">>$LOGFILE
 #these are files other than the first
 FILES=$(ls $WORKDIR | grep 'pmovie.*.p4.gz')
@@ -153,8 +152,7 @@ FILES=$(ls $PMOVDIR | grep .npz);
 echo "searching for files at $(date)">>$LOGFILE
 for i in $FILES; do
     while [ $(pgrep -f searchp4.py  |  wc -l ) -ge $MAXPROC ]; do sleep 5; done;
-    OUTNAME="traj$(echo $i | sed 's/^.*p4\.\([0-9]\+\).npz$/\1/')"
-    echo "search: searching $i into $OUTNAME">>$LOGFILE
+    echo "search: searching $i">>$LOGFILE
     sleep 0.2;
     ./searchp4.py -D $SCANDIR $i $SCANDIR/selected.npy &
 done
@@ -169,7 +167,7 @@ echo "gathering for trajectories $(date)">>$LOGFILE
 #finally, we gather trajectories
 cp traj.py $SCANDIR/
 cd $SCANDIR
-./traj.py 'traj.*.npz' trajectories >>$LOGFILE
+./traj.py '.*.npz' trajectories >>$LOGFILE
 # uncomment if you want to clear temporary files
 # rm  traj*.npz selected.npy
 echo "done at $(date)">>$LOGFILE
@@ -189,8 +187,6 @@ if opts['--server'] and opts['--ramses-node']:
 else:
     ramsesnode='';
 convopts=xopts+opts['--conv-opts'];
-scanopts = opts['--scan-opts'];
-scanscript=opts['--scanner'];
 
 #header
 header = headert.format(
