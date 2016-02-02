@@ -141,7 +141,7 @@ gathert='''
 echo "gathering searches at $(date)">>$LOGFILE
 cp gather.py orig.npy $SCANDIR/
 cd $SCANDIR
-./gather.py -ui ./orig.npy 'found.*.npy' selected &>>$LOGFILE
+./gather.py -ui ./orig.npy '.*\.found.npy' selected &>>$LOGFILE
 # uncomment if you want to clear temporary files
 # rm "found*.npy"
 cd  ..
