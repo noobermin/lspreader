@@ -106,7 +106,7 @@ cd $WORKDIR
 convertt_first='''
 
 FIRSTPMOV={firstfile}
-./pmov.py {convopts}  --gzip --firsthash=./hash.d $FIRSTPMOV
+./pmov.py {convopts}  -Z --firsthash=./hash.d $FIRSTPMOV
 #get first file in case first file has multiple frames
 
 FIRSTNPZ=$(ls | grep '{firstfile}.*\.npz$' | head -n 1)

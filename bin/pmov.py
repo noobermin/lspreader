@@ -24,10 +24,10 @@ Options:
                       first file to generate the hash specification from and
                       output to DFILE.
     --dir=D -D D      Output to this directory if given not <output> name.
-    --X -x            Use X as a spatial dimension. Similar options below are
+    --x -x            Use X as a spatial dimension. Similar options below are
                       for Y and Z. If none are passed, assume 3D cartesian.
-    --Y -y            See above.
-    --Z -z            See above.
+    --y -y            See above.
+    --z -z            See above.
 '''
 from lspreader import lspreader as rd;
 from lspreader.pmovie import firsthash, genhash, addhash, sortframe

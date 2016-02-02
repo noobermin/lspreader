@@ -69,7 +69,7 @@ fi
 #copying files to the working directory
 rcp $RDDIR/pmovie/searchp4.py $RDDIR/pmovie/gather.py \
     $RDDIR/pmovie/traj.py $RDDIR/pmovie/orig.py \
-    $RDDIR/pmovie/scanp4.py \
+    $RDDIR/pmovie/scanp4.py $RDDIR/bin/pmov.py \
     $DEST
 #copying the pmovie-pbsgen.py generator to the directory to make the pbs script
 rcp $RDDIR/pmovie/pmovie-pbsgen-exp.py $OUTDIR/
