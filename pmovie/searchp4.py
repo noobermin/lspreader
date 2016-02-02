@@ -13,6 +13,8 @@ Options:
 '''
 from docopt import docopt;
 opts=docopt(__doc__,help=True);
+from lspreader.misc import readfile;
+from lspreader.pmovie import read_and_hash;
 import numpy as np;
 from time import time;
 opts = docopt(__doc__,help=True);
