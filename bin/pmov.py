@@ -48,9 +48,9 @@ if __name__=='__main__':
     opts = docopt(__doc__,help=True);
     vprint = mkvprint(opts);
     dims=[]
-    if opts['--X']: dims.append('xi');
-    if opts['--Y']: dims.append('yi');
-    if opts['--Z']: dims.append('zi');
+    if opts['--x']: dims.append('xi');
+    if opts['--y']: dims.append('yi');
+    if opts['--z']: dims.append('zi');
     if len(dims)==0:
         dims=['xi','yi','zi'];
     #reading in using the reader.
