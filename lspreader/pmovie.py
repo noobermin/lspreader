@@ -118,7 +118,7 @@ def read_and_hash(fname, hashd, **kw):
     else:
         removedups = False;
     return [addhash(frame, hashd, removedups=removedups)
-            for frame in read(fname, kw**)];
+            for frame in read(fname, **kw)];
 
 def filter_hashes_from_file(fname, hashd, f, **kw):
     '''
