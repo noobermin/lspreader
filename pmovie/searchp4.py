@@ -15,10 +15,7 @@ from docopt import docopt;
 opts=docopt(__doc__,help=True);
 import numpy as np;
 from time import time;
-def vprint(s):
-    print("{}: {}".format(opts['<input>'], s));
 opts = docopt(__doc__,help=True);
-vprint = mkvprint(opts);
 
 indices = np.load(opts['<indexfile>']);
 hashd = readfile(opts['--hash'],dumpfull=True);
