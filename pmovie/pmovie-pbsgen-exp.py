@@ -109,8 +109,8 @@ FIRSTPMOV={firstfile}
 ./pmov.py {convopts}  --firsthash=./hash.d $FIRSTPMOV
 #get first file in case first file has multiple frames
 
-FIRSTNPZ=$(ls $PMOVDIR | grep '{firstfile}.*\.npz$' | head -n 1)
-./orig.py $PMOVDIR/$FIRSTNPZ orig
+FIRSTNPZ=$(ls | grep '{firstfile}.*\.npz$' | head -n 1)
+./orig.py $FIRSTNPZ orig
 '''
 
 scanp4t='''
