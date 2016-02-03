@@ -13,6 +13,7 @@ Options:
     --sort -s         Sort the pmovies by IPP.
     --hdf -H          Output to hdf5 instead of to a pickle file.
                       The group will be based on the step.
+    --gzip -Z         File is gzipped.
     --zip -c          Use compression for hdf5.
     --verbose -v      Be verbose.
     --lock=L -l L     Specify a lock file for synchronized output for hdf5.
@@ -23,10 +24,10 @@ Options:
                       first file to generate the hash specification from and
                       output to DFILE.
     --dir=D -D D      Output to this directory if given not <output> name.
-    --X -x            Use X as a spatial dimension. Similar options below are
+    --x -x            Use X as a spatial dimension. Similar options below are
                       for Y and Z. If none are passed, assume 3D cartesian.
-    --Y -y            See above.
-    --Z -z            See above.
+    --y -y            See above.
+    --z -z            See above.
 '''
 from lspreader import lspreader as rd;
 from lspreader.pmovie import firsthash, genhash, addhash, sortframe
@@ -47,13 +48,13 @@ if __name__=='__main__':
     opts = docopt(__doc__,help=True);
     vprint = mkvprint(opts);
     dims=[]
-    if opts['--X']: dims.append('xi');
-    if opts['--Y']: dims.append('yi');
-    if opts['--Z']: dims.append('zi');
+    if opts['--x']: dims.append('xi');
+    if opts['--y']: dims.append('yi');
+    if opts['--z']: dims.append('zi');
     if len(dims)==0:
         dims=['xi','yi','zi'];
     #reading in using the reader.
-    frames=rd.read(opts['<input>']);
+    frames=rd.read(opts['<input>'], gzip=opts['--gzip']);
     
     if opts['--sort']:
         vprint("sorting...");
