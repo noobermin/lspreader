@@ -49,6 +49,7 @@ while getopts ':hS:s:N:c:' opt; do
                       THEIRSCANSCRIPT=$OPTARG
                       ;;
               esac
+              ;;
           o)
               SCANOPTS=$OPTARG
               ;;
