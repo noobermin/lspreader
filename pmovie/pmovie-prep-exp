@@ -72,6 +72,7 @@ shift "$((OPTIND-1))"
 
 source $CONDA
 DEST=$( [ -n "$1" ] && echo $1)
+if [ "$DEST" == "." ]; then DEST=$(pwd); fi;
 [ -z "$DEST" ] && echo $USAGE && exit 1;
 OUTDIR=$( [ -n "$2" ] && echo $2 ||  echo "." )
 [ -n "$3" ]  && RDDIR="$3";
