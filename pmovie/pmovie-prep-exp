@@ -25,6 +25,7 @@ SERVER="ramses"
 RDDIR="/home/ngirmang.1/lspreader"
 CONDA="/home/ngirmang.1/conda"
 RAMSESNODE=
+MYSCANSCRIPT=Escan.py
 while getopts ':hS:s:N:c:' opt; do
       case $opt in
           h)
@@ -46,6 +47,7 @@ while getopts ':hS:s:N:c:' opt; do
                       MYSCANSCRIPT=Escan-with-region.py
                       ;;
                   *)
+                      MYSCANSCRIPT=
                       THEIRSCANSCRIPT=$OPTARG
                       ;;
               esac
