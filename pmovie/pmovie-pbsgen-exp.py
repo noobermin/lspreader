@@ -172,7 +172,7 @@ cd $SCANDIR
 # uncomment if you want to clear temporary files
 # rm  traj*.npz selected.npy
 echo "done at $(date)">>$LOGFILE
-if [ -f tranjectories.npz ]; then
+if [ -f trajectories.npz ]; then
     echo "file is available at $HOSTNAME:$PWD/trajectories.npz"
 else
     echo "trajectories is not found, check the log for errors."
