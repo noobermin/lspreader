@@ -173,9 +173,9 @@ cd $SCANDIR
 # rm  traj*.npz selected.npy
 echo "done at $(date)">>$LOGFILE
 if [ -f trajectories.npz ]; then
-    echo "file is available at $HOSTNAME:$PWD/trajectories.npz"
+    echo "file is available at $HOSTNAME:$PWD/trajectories.npz">>$LOGFILE
 else
-    echo "trajectories is not found, check the log for errors."
+    echo "trajectories is not found, check the log for errors.">>$LOGFILE
 fi;
 cd ..
 '''
