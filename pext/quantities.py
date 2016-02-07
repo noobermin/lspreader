@@ -88,7 +88,7 @@ if __name__ == "__main__":
     else:
         angleopt = None;
     KE, good = totalKE(d, ecut, angleopt, return_bools=True);
-    LE = laserE(E_0, w, T, dim=dim);
+    LE = laserE(E_0, T, w, dim=dim);
     totalq = d['q'][good].sum()*1e12;
     print('total charge: {} {}'.format(totalq,'pC/cm' if opts['--2D'] else 'pC'));
     print("total energy: {} J".format(KE));

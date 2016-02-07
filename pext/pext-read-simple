@@ -68,7 +68,7 @@ cp $RDDIR/bin/pext.py $RDDIR/bin/arrcat.py \
 echo "\
 #!/usr/bin/env bash
 
-[ -n \"$CONDA\" ] && source $CONDA
+[ -e \"$CONDA\" ] && source $CONDA
 
 PFILES=\$(ls | grep 'pext[0-9]\+.p4$' )
 echo \"converting\"

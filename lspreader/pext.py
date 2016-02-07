@@ -36,7 +36,7 @@ def add_quantities(d, coords=None,massE=0.511e6):
         quants['phi']   = np.arctan2(d[coords[1]],d[coords[0]]);
         quants['phi_n'] = np.arctan2(d[coords[2]],d[coords[0]]);
     elif len(coords) == 2:
-        quants['phi']   = np.arctan2(d[coords[0]],d[coords[1]]);
+        quants['phi']   = np.arctan2(d[coords[1]],d[coords[0]]);
     keys,items = zip(*quants.items());
     return rfn.rec_append_fields(
         d, keys, items);
