@@ -15,10 +15,8 @@ Options:
     -N RAMSESNODE        Run only on the node RAMSESNODE. Usually, the generating
                          pbs script will run on a node specified in the <pmovie-dir>
                          argument.
-    -S SCANSCRIPT        Specify global scan type which performs a global
-                         filter on the pmovies before creating the final trajectories
-                         file. Defaults to Escan.py
-    -o SCANOPTS          Passes this string as an option to the scan script.
+    -S SCRIPT            Select a scan script. Either it is a file in the current
+                         directory or it is a file in lspreader.
     -c CONDAFILE         File to source for conda. This should be a conda with
                          lspreader installed.
 "
@@ -27,9 +25,8 @@ SERVER="ramses"
 RDDIR="/home/ngirmang.1/lspreader"
 CONDA="/home/ngirmang.1/conda"
 RAMSESNODE=
-SCANSCRIPT="Escan.py"
-SCANOPTS=
-while getopts ':hS:s:N:o:c:' opt; do
+MYSCANSCRIPT=Escan.py
+while getopts ':hS:s:N:c:' opt; do
       case $opt in
           h)
               echo "$USAGE"
@@ -44,15 +41,14 @@ while getopts ':hS:s:N:o:c:' opt; do
           S)
               case $OPTARG in
                   Escan.py)
-                      SCANSCRIPT=$OPTARG
+                      MYSCANSCRIPT=Escan.py
                       ;;
                   Escan-with-region.py)
-                      SCANSCRIPT=$OPTARG
+                      MYSCANSCRIPT=Escan-with-region.py
                       ;;
-                  
                   *)
-                      echo "Invalid scanner: $OPTARG">&2
-                      exit 1
+                      MYSCANSCRIPT=
+                      THEIRSCANSCRIPT=$OPTARG
                       ;;
               esac
               ;;
@@ -76,19 +72,28 @@ shift "$((OPTIND-1))"
 
 source $CONDA
 DEST=$( [ -n "$1" ] && echo $1)
+if [ "$DEST" == "." ]; then DEST=$(pwd); fi;
 [ -z "$DEST" ] && echo $USAGE && exit 1;
 OUTDIR=$( [ -n "$2" ] && echo $2 ||  echo "." )
 [ -n "$3" ]  && RDDIR="$3";
+
+if [ -n "$MYSCANSCRIPT" ]; then
+    rcp $RDDIR/pmovie/scan/$MYSCANSCRIPT $DEST/scanner.py
+elif [ -n "$THEIRSCANSCRIPT" ] && [ -e "$THEIRSCANSCRIPT" ]; then
+    rcp $THEIRSCANSCRIPT $DEST/scanner.py
+else
+    echo "Didn't find the scan script:" $THEIRSCANSCRIPT
+    exit;
+fi
 
 #checking for remote node
 if [ -n "$( echo "$DEST" | grep \: )" ]; then
     RAMSESNODE=$(echo "$DEST" | sed 's/@\{0,1\}\([A-Z,a-z,0-9]\+\):.*/\1/');
 fi
 #copying files to the working directory
-rcp $RDDIR/bin/pmov.py \
-    $RDDIR/pmovie/search.py $RDDIR/pmovie/gather.py \
+rcp $RDDIR/pmovie/searchp4.py $RDDIR/pmovie/gather.py \
     $RDDIR/pmovie/traj.py $RDDIR/pmovie/orig.py \
-    $RDDIR/pmovie/scan/$SCANSCRIPT \
+    $RDDIR/pmovie/scanp4.py $RDDIR/bin/pmov.py \
     $DEST
 #copying the pmovie-pbsgen.py generator to the directory to make the pbs script
 rcp $RDDIR/pmovie/pmovie-pbsgen.py $OUTDIR/
@@ -98,11 +103,9 @@ if [ $SERVER == "ramses" ] && [ -n "$RAMSESNODE" ]; then
     rcp "$DEST/*.lsp" ./.destlsp
     ./pmovie-pbsgen.py --server=$SERVER --nodes=$NODES --outdir=$OUTDIR \
                        --dotlsp=.destlsp --filelist=.lsfiles \
-                       --scanner=$SCANSCRIPT --scan-opts=$SCANOPTS \
                        --ramses-node=$RAMSESNODE $DIRONNODE
 else
     ./pmovie-pbsgen.py --server=$SERVER --nodes=$NODES --outdir=$OUTDIR \
-                       --scanner=$SCANSCRIPT --scan-opts=$SCANOPTS \
                        --ramses-node=$RAMSESNODE $DEST
 fi
 

@@ -9,9 +9,7 @@ Options:
     --help -h                  Print this help.
     --nodes=N -n N             Number of utilized nodes. [default: 1]
     --server=SERVER            Tune for this server. [default: ramses]
-    --scanner=SCANSCRIPT       Use this scan script. [default: Escan.py]
     --conv-opts=OPTS           Add these opts to pmov.py. [default: ]
-    --scan-opts=OPTS           Add these opts to the chosen scanner. [default: ]
     --outdir=OUT -o OUT        Specify an output directory for pbsscripts [default: .]
     --ramses-node=NODE         Submit to a specific ramses node.
     --filelist=LS -l LS        Supply a directory listing if the directory is
@@ -43,7 +41,7 @@ if not opts['--filelist']:
 else:
     ls = filelines(opts['--filelist'],strip=True);
 # filtering for pmovies
-pmovierx=re.compile(r"pmovie([0-9]+).p4$");
+pmovierx=re.compile(r"pmovie([0-9]+).p4");
 lspmovies = [(s, int(pmovierx.match(s).group(1)))
              for s in ls if pmovierx.match(s)];
 lspmovies.sort(key=lambda i: i[1]);
@@ -94,7 +92,8 @@ headert='''
 
 source $HOME/.bashrc
 source {condafile}
-LOGFILE=$PBS_O_WORKDIR/pmovie-conv-{post}.log
+LOGFILEDIR=$( [ -n "$PBS_O_WORKDIR" ] && echo "$PBS_O_WORKDIR" || echo . )
+LOGFILE=$LOGFILEDIR/pmovie-conv-{post}.log
 MAXPROC={maxproc}
 WORKDIR={workdir}
 cd $WORKDIR
@@ -106,80 +105,59 @@ cd $WORKDIR
 #conversion
 #convert first file
 convertt_first='''
-PMOVDIR=$WORKDIR/pmovie-conv
-[ ! -d $PMOVDIR ] && mkdir $PMOVDIR;
 
 FIRSTPMOV={firstfile}
-./pmov.py {convopts} -D $PMOVDIR --firsthash=./hash.d $FIRSTPMOV
+./pmov.py {convopts}  -Z --firsthash=./hash.d $FIRSTPMOV
 #get first file in case first file has multiple frames
 
-FIRSTNPZ=$(ls $PMOVDIR | grep '{firstfile}.*\.npz$' | head -n 1)
-./orig.py $PMOVDIR/$FIRSTNPZ orig
+FIRSTNPZ=$(ls | grep '{firstfile}.*\.npz$' | head -n 1)
+./orig.py $FIRSTNPZ orig>>$LOGFILE
+rm -v {firstfile}*.npz>>$LOGFILE
 '''
 
-convertt='''
-echo "starting mass conversion at $(date)">>$LOGFILE
-#these are files other than the first
-FILES=$(ls $WORKDIR | grep -v $FIRSTPMOV )
-for i in $FILES; do
-    while [ $(pgrep -f pmov.py  |  wc -l ) -ge $MAXPROC ]; do sleep 5; done; 
-    echo "convert: running $i">>$LOGFILE
-    sleep 0.2;
-    ./pmov.py {convopts} -D pmovie-conv  --hash=./hash.d $i &
-done
-
-while [ $(pgrep -f pmov.py | wc -l) -gt 0 ]; do
-    echo "waiting for $(pgrep -f pmov.py | wc -l) process(es)">>$LOGFILE
-    echo "call deq to end">>$LOGFILE
-    sleep 5;
-done
-'''
-
-#global scans
-scant='''
-FILES="$(ls $PMOVDIR | grep .npz);"
-SCANSCRIPT={scanscript}
+scanp4t='''
 SCANDIR=pmovie-scan
-[ ! -d $PMOVDIR ] && mkdir $SCANDIR;
+[ ! -d $SCANDIR ] && mkdir $SCANDIR;
 
-echo "scanning files at $(date)">>$LOGFILE
+echo "starting scanning at $(date)">>$LOGFILE
+#these are files other than the first
+FILES=$(ls $WORKDIR | grep 'pmovie.*.p4.gz$')
 for i in $FILES; do
-    while [ $(pgrep -f $SCANSCRIPT  |  wc -l ) -ge $MAXPROC ]; do sleep 5; done;
-    OUTNAME="found$(echo $i | sed 's/^.*p4\.\([0-9]\+\).npz$/\1/')"
-    echo "scan: running $i into $OUTNAME">>$LOGFILE
+    while [ $(pgrep -f scanp4.py  |  wc -l ) -ge $MAXPROC ]; do sleep 5; done; 
+    echo "scanp4: running $i">>$LOGFILE
+    OUTNAME="$i.found"
     sleep 0.2;
-    ./$SCANSCRIPT {scanopts} $PMOVDIR/$i $SCANDIR/$OUTNAME &
+    ./scanp4.py --gzip --hash=./hash.d $i $SCANDIR/$OUTNAME &
 done
-while [ $(pgrep -f $SCANSCRIPT | wc -l) -gt 0 ]; do
-    echo "waiting for $(pgrep -f Escan.py | wc -l) process(es)">>$LOGFILE
+
+while [ $(pgrep -f scanp4.py | wc -l) -gt 0 ]; do
+    echo "waiting for $(pgrep -f scanp4.py | wc -l) process(es)">>$LOGFILE
     echo "call deq to end">>$LOGFILE
     sleep 5;
 done
 '''
-
 gathert='''
 #now, gather the matches
 echo "gathering searches at $(date)">>$LOGFILE
 cp gather.py orig.npy $SCANDIR/
 cd $SCANDIR
-./gather.py -ui ./orig.npy 'found.*.npy' selected &>>$LOGFILE
+./gather.py -ui ./orig.npy '.*\.found.npy' selected &>>$LOGFILE
 # uncomment if you want to clear temporary files
 # rm "found*.npy"
 cd  ..
 '''
+
 #trajectory finding
 searcht='''
-FILES=$(ls $PMOVDIR | grep .npz);
 #now, we search
 echo "searching for files at $(date)">>$LOGFILE
 for i in $FILES; do
-    while [ $(pgrep -f search.py  |  wc -l ) -ge $MAXPROC ]; do sleep 5; done;
-    OUTNAME="traj$(echo $i | sed 's/^.*p4\.\([0-9]\+\).npz$/\1/')"
-    echo "search: searching $i into $OUTNAME">>$LOGFILE
+    while [ $(pgrep -f searchp4.py  |  wc -l ) -ge $MAXPROC ]; do sleep 5; done;
+    echo "search: searching $i">>$LOGFILE
     sleep 0.2;
-    ./search.py $PMOVDIR/$i $SCANDIR/selected.npy $SCANDIR/$OUTNAME &
+    ./searchp4.py -ZD $SCANDIR $i $SCANDIR/selected.npy &
 done
-while [ $(pgrep -f search.py | wc -l) -gt 0 ]; do
+while [ $(pgrep -f searchp4.py | wc -l) -gt 0 ]; do
     echo "waiting for $(pgrep -f search.py | wc -l) process(es)">>$LOGFILE
     echo "call deq to end">>$LOGFILE
     sleep 5;
@@ -190,17 +168,18 @@ echo "gathering for trajectories $(date)">>$LOGFILE
 #finally, we gather trajectories
 cp traj.py $SCANDIR/
 cd $SCANDIR
-./traj.py 'traj.*.npz' trajectories >>$LOGFILE
+./traj.py '.*.npz' trajectories >>$LOGFILE
 # uncomment if you want to clear temporary files
 # rm  traj*.npz selected.npy
 echo "done at $(date)">>$LOGFILE
-if [ -f tranjectories.npz ]; then
-    echo "file is available at $HOSTNAME:$PWD/trajectories.npz"
+if [ -f trajectories.npz ]; then
+    echo "file is available at $HOSTNAME:$PWD/trajectories.npz">>$LOGFILE
 else
-    echo "trajectories is not found, check the log for errors."
+    echo "trajectories is not found, check the log for errors.">>$LOGFILE
 fi;
 cd ..
 '''
+
 post = '0';
 xopts=''+dims_flag; #for copy so we don't write to dims_flag
 #ramses hack
@@ -209,8 +188,6 @@ if opts['--server'] and opts['--ramses-node']:
 else:
     ramsesnode='';
 convopts=xopts+opts['--conv-opts'];
-scanopts = opts['--scan-opts'];
-scanscript=opts['--scanner'];
 
 #header
 header = headert.format(
@@ -225,18 +202,12 @@ convert_first = convertt_first.format(
     convopts = convopts,
     firstfile=sortedmovies[0])
 
-convert = convertt.format(
-    convopts=convopts);
-
-#scanning
-scan = scant.format(
-    scanscript=scanscript,
-    scanopts=scanopts);
 #no format needed for the following.
+scanp4 = scanp4t
 gather=gathert;
 search=searcht;
 traj =trajt;
-out = ''.join([header,convert_first,convert,scan,gather,search,traj]);
+out = ''.join([header,convert_first,scanp4,gather,search,traj]);
 
 with open(opts['--outdir']+'/pmovie-conv-'+post+'.pbs','w') as f:
     f.write(out);
