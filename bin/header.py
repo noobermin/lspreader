@@ -9,6 +9,7 @@ Options:
   --help -h               Show this help.
   --verbose v             Turn on verbosity.
   --size -s               Output the size of the header in bytes.
+  --gzip -Z               Use gzip.
 '''
 
 from lspreader import lspreader as rd;
@@ -23,7 +24,9 @@ from time import time;
 opts=docopt(__doc__,help=True);
 verbose = opts['--verbose'];
 name = opts['<input>'];
-h = rd.get_header(opts['<input>'],size=opts['--size']);
+h = rd.get_header(
+    opts['<input>'],
+    size=opts['--size'], gzip=opts['--gzip']);
 if opts['--size']:
     print("size:{}".format(h[1]));
 else:
