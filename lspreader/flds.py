@@ -29,3 +29,31 @@ def firstsort(d):
               for l in ['xs', 'ys', 'zs'] ];
     si = np.lexsort((d['z'],d['y'],d['x']));
     return si,shape;
+
+def stride(d,strides):
+    '''
+    Stride each shaped quantity.
+
+    Parameters:
+    -----------
+
+    d       -- the flds/sclr data
+    strides -- a tuple (sx,sy,sz) of strides. Leave
+               None for strides.
+    '''
+    labels = [ key for key in d.keys()
+               if key not in ['xs', 'ys', 'zs'] ];
+    sx,sy,sz = strides
+    for l in labels:
+        d[l] = d[l][::sx,::sy,::sz];
+    return d;
+
+def squeeze(d):
+    '''
+    Squeeze the shaped data.
+    '''
+    labels = [ key for key in d.keys()
+               if key not in ['xs', 'ys', 'zs'] ];
+    for l in labels:
+        d[l] = np.squeeze(d[l]);
+    return d;
