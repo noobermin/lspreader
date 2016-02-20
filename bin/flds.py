@@ -9,7 +9,7 @@ Usage:
 Options:
   --help -h              Show this help.
   --verbose -v           Turn on verbosity.
-  --gzip -g              Read in gzipped data.
+  --gzip -Z              Read in gzipped data.
   --pickle -p            Use pickle over compressed npz.
   --reshape -r           Use rectangular reshaping for contiguous simulations.
 '''

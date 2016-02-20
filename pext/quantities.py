@@ -13,6 +13,7 @@ Options:
   --W=SPOTSIZE -w SPOTSIZE   Set the spotsize meters. [default: 2.26e-6]
   --T=FWHM -t FWHM           Set the Full-Width Half-Max in seconds. [default: 30e-15]
   --angle=ANGLE -a ANGLE     Restrict the angle. In 2D, this is just phi; in 3D, it is solid angle.
+  --L=L -l L                 Set the wavelength. [default: 800e-9]
 '''
 import numpy as np;
 
