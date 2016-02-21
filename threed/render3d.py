@@ -30,7 +30,7 @@ import cPickle as pickle;
 from docopt import docopt;
 import re;
 import math;
-from lspreader.misc import conv,readfile;
+from lspreader.misc import conv,readfile,test;
 from tvtk.util.ctf import ColorTransferFunction, PiecewiseFunction;
 
 def main():
@@ -128,7 +128,6 @@ def mk_ctf(vlim,hr,sr,mode='linear'):
                            hue_range=hr,
                            sat_range=sr,
                            mode=mode);
-
 def set_otf(v,otf):
     '''Set the volume object's otf'''
     v._otf = otf;
@@ -203,22 +202,26 @@ def volumetric(S,colorbar=True,**kw):
         ret['mlab'] = mlab = kw['mlab'];
     else:
         import mayavi.mlab as mlab; ret['mlab']=mlab;
-    if 'zeros' in kw and kw['zeros'] is not None:
+    if test(kw,'zeros'):
         S=zero_range(S,kw['zeros'])
     #taking the logarithm.
-    if 'log' in kw and kw['log']: S=np.log10(S+0.1);
+    if test(kw,'log'):
+        S=np.log10(np.where(S <= 1.0, 1, S))
     #creating the figure.
+    vmin,vmax = S.min(),S.max();
+    if test(kw,'vlim'):
+        if kw['vlim'][0]: vmin = kw['vlim'][0];
+        if kw['vlim'][1]: vmax = kw['vlim'][1];
+    vlim=vmin,vmax;
+    
     if 'fig' not in kw:
-        fig=mlab.figure(size=(1280,1024),
-                        bgcolor=(1.0,1.0,1.0),
-                        fgcolor=(0.3,0.3,0.3));
+        fig=mlab.figure(
+            size=(1280,1024),
+            bgcolor=(1.0,1.0,1.0),
+            fgcolor=(0.3,0.3,0.3));
         ret['fig']=fig;
     else:
         fig = ret['fig'] = kw['fig'];
-    if 'vlim' not in kw:
-        vlim = (S.min(),S.max());
-    else:
-        vlim=kw['vlim'];
     #end boilerplate
     fig.scene.disable_render=True;
     if 'X' in kw:
@@ -269,7 +272,7 @@ def volumetric(S,colorbar=True,**kw):
         v.module_manager.scalar_lut_manager.label_text_property.bold = False;
         v.module_manager.scalar_lut_manager.label_text_property.italic = False;
 
-    if 'render' in kw and kw['render']:
+    if test(kw,'render'):
         fig.scene.disable_render=False;
     else:
         fig.scene.disable_render=True;
