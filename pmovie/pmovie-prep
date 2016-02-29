@@ -108,11 +108,11 @@ if [ $SERVER == "ramses" ] && [ -n "$RAMSESNODE" ]; then
     rcp "$DEST/*.lsp" ./.destlsp
     ./pmovie-pbsgen.py --server=$SERVER --nodes=$NODES --outdir=$OUTDIR \
                        --dotlsp=.destlsp --filelist=.lsfiles \
-		       $ZIPPED \
+		       $ZIPPED --conda=$CONDA \
                        --ramses-node=$RAMSESNODE $DIRONNODE
 else
     ./pmovie-pbsgen.py --server=$SERVER --nodes=$NODES --outdir=$OUTDIR \
-                       $ZIPPED \
+                       $ZIPPED --conda=$CONDA \
                        --ramses-node=$RAMSESNODE $DEST
 fi
 
