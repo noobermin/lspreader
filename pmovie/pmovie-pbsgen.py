@@ -124,7 +124,7 @@ SCANDIR=pmovie-scan
 
 echo "starting scanning at $(date)">>$LOGFILE
 #these are files other than the first
-FILES=$(ls $WORKDIR | grep 'pmovie.*.p4.gz$')
+FILES=$(ls $WORKDIR | grep 'pmovie.*.p4$')
 for i in $FILES; do
     while [ $(pgrep -f scanp4.py  |  wc -l ) -ge $MAXPROC ]; do sleep 5; done; 
     echo "scanp4: running $i">>$LOGFILE
