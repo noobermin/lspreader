@@ -19,6 +19,7 @@ Options:
                          directory or it is a file in lspreader.
     -c CONDAFILE         File to source for conda. This should be a conda with
                          lspreader installed.
+    -U                   Expect pmovie files to NOT be gzipped.
 "
 NODES=1
 SERVER="ramses"
@@ -26,7 +27,8 @@ RDDIR="/home/ngirmang.1/lspreader"
 CONDA="/home/ngirmang.1/conda"
 RAMSESNODE=
 MYSCANSCRIPT=Escan.py
-while getopts ':hS:s:N:c:' opt; do
+ZIPPED=--gzip
+while getopts ':hS:s:N:c:z' opt; do
       case $opt in
           h)
               echo "$USAGE"
@@ -66,6 +68,9 @@ while getopts ':hS:s:N:c:' opt; do
               echo "Option -$OPTARG requires an argument.">&2
               exit 1
               ;;
+	  U)
+              ZIPPED=
+              ;;
       esac
 done
 shift "$((OPTIND-1))"
@@ -103,9 +108,11 @@ if [ $SERVER == "ramses" ] && [ -n "$RAMSESNODE" ]; then
     rcp "$DEST/*.lsp" ./.destlsp
     ./pmovie-pbsgen.py --server=$SERVER --nodes=$NODES --outdir=$OUTDIR \
                        --dotlsp=.destlsp --filelist=.lsfiles \
+		       $ZIPPED
                        --ramses-node=$RAMSESNODE $DIRONNODE
 else
     ./pmovie-pbsgen.py --server=$SERVER --nodes=$NODES --outdir=$OUTDIR \
+                       $ZIPPED
                        --ramses-node=$RAMSESNODE $DEST
 fi
 

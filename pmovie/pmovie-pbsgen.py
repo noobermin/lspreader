@@ -17,6 +17,7 @@ Options:
     --dotlsp=DOT -. DOT        Supply a .lsp file if it is unreachable for this
                                script.
     --conda=CONDAFILE          Specify file to source for lspreader and others. [default: $HOME/conda]
+    --gzip -Z                  Expect pmovie files to be zipped.
 '''
 import subprocess;
 import numpy as np;
@@ -82,6 +83,8 @@ except KeyError as k:
     exit(1);
 condafile=opts['--conda'];
 
+gzipopt=" -Z " if opts['--gzip'] else "";
+
 #template for PBS script output
 headert='''
 #PBS -l walltime={hours}:{mins}:00
@@ -107,7 +110,7 @@ cd $WORKDIR
 convertt_first='''
 
 FIRSTPMOV={firstfile}
-./pmov.py {convopts}  -Z --firsthash=./hash.d $FIRSTPMOV
+./pmov.py {convopts} --firsthash=./hash.d $FIRSTPMOV
 #get first file in case first file has multiple frames
 
 FIRSTNPZ=$(ls | grep '{firstfile}.*\.npz$' | head -n 1)
@@ -127,7 +130,7 @@ for i in $FILES; do
     echo "scanp4: running $i">>$LOGFILE
     OUTNAME="$i.found"
     sleep 0.2;
-    ./scanp4.py --gzip --hash=./hash.d $i $SCANDIR/$OUTNAME &
+    ./scanp4.py {gzipopt}  --hash=./hash.d $i $SCANDIR/$OUTNAME &
 done
 
 while [ $(pgrep -f scanp4.py | wc -l) -gt 0 ]; do
@@ -187,7 +190,7 @@ if opts['--server'] and opts['--ramses-node']:
     ramsesnode=':'+opts['--ramses-node'];
 else:
     ramsesnode='';
-convopts=xopts+opts['--conv-opts'];
+convopts=xopts+opts['--conv-opts']+gzipopt;
 
 #header
 header = headert.format(
@@ -203,7 +206,7 @@ convert_first = convertt_first.format(
     firstfile=sortedmovies[0])
 
 #no format needed for the following.
-scanp4 = scanp4t
+scanp4 = scanp4t.format(gzipopt=gzipopt)
 gather=gathert;
 search=searcht;
 traj =trajt;
