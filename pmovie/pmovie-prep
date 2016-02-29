@@ -28,7 +28,7 @@ CONDA="/home/ngirmang.1/conda"
 RAMSESNODE=
 MYSCANSCRIPT=Escan.py
 ZIPPED=--gzip
-while getopts ':hS:s:N:c:z' opt; do
+while getopts ':hS:s:N:c:U' opt; do
       case $opt in
           h)
               echo "$USAGE"
