@@ -9,7 +9,7 @@ Usage:
 Options:
   --2D -2                    Calculate 2D quantities instead.
   --E-cut=ECUT -e ECUT       Cutoff at this energy in MeV. [default: 0.0]
-  --E_0=E0 -E E0             Enter the peak electric field in V/m. [default: 4.763e12]
+  --I=I -I I                 Use this intensity in W/cm^2. [default: 3e18]
   --W=SPOTSIZE -w SPOTSIZE   Set the spotsize meters. [default: 2.26e-6]
   --T=FWHM -t FWHM           Set the Full-Width Half-Max in seconds. [default: 30e-15]
   --angle=ANGLE -a ANGLE     Restrict the angle. In 2D, this is just phi; in 3D, it is solid angle.
@@ -17,7 +17,7 @@ Options:
 '''
 import numpy as np;
 
-e_0 = 8.85418782e-12;
+e0 = 8.85418782e-12;
 c = 2.99792458e8;
 e = 1.60217657e-19
 
@@ -67,16 +67,18 @@ def laserE(E_0, T, w,dim="3D"):
     '''
 
     if dim == "2D":
-        return w * np.sqrt(np.pi/2) * (c*e_0*E_0**2)/2 * T*1e-2;
+        return w * np.sqrt(np.pi/2) * (c*e0*E_0**2)/2 * T*1e-2;
     elif not dim or dim == "3D":
-        return w**2 * (np.pi/2) * (c*e_0*E_0**2)/2 * T;
+        return w**2 * (np.pi/2) * (c*e0*E_0**2)/2 * T;
     else:
         raise ValueError("dim is not None, '2D' or '3D'");
 
 if __name__ == "__main__":
     from docopt import docopt;
     opts = docopt(__doc__,help=True);
-    E_0 = float(opts['--E_0']);
+    #E_0 = float(opts['--E_0']);
+    I = float(opts['--I']);
+    E_0 = np.sqrt(2*I*1e4/(c*e0));
     ecut = float(opts['--E-cut'])*1e6;
     w    = float(opts['--W']);
     T    = float(opts['--T']);
