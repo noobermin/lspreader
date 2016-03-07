@@ -38,7 +38,7 @@ def angular_load(
     if normalize:
          kw = normalize
          Efactor = kw['max_e']/kw['energy_bins'];
-         if kw['keV']: Efactor *= 1e-3;
+         if keV: Efactor *= 1e-3;
          s /= Efactor*2*np.pi/kw['angle_bins'];
     return s,phi,e,d
 
