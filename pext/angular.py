@@ -39,7 +39,7 @@ if __name__ == "__main__":
     opts=docopt(__doc__,help=True);
     s,phi,e,kw,_ = _prep(opts);
     if opts['<output>'] and opts['--agg']:
-        plt.change_backend('agg');
+        plt.switch_backend('agg');
     angular(s,phi,e,**kw);
     if opts['<output>']:
         if opts['--high-res']:

@@ -47,7 +47,7 @@ while getopts ':hrt:' opt; do
 done
 shift "$((OPTIND-1))"
 
-source $CONDA
+[ -e "$CONDA" ] && source "$CONDA"
 PEXTDIR=$( [ -n "$1" ] && echo $1 || echo "." )
 [ -n "$2" ]  && RDDIR="$2";
 if [ ! $PEXTDIR == "." ]; then
@@ -64,7 +64,8 @@ USEZ=$([ -n "$(cat *.lsp | grep "z-cells")" ] && echo "z" || echo "")
 DIMS=-$USEX$USEY$USEZ
 cp $RDDIR/bin/pext.py $RDDIR/bin/arrcat.py \
    $RDDIR/pext/angular.py $RDDIR/pext/quantities.py \
-   .
+   $RDDIR/pext/angularmov.py \
+   ./
 echo "\
 #!/usr/bin/env bash
 
