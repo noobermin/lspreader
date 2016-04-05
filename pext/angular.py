@@ -24,7 +24,7 @@ Options:
   --polar -p                  Plot polar angles, letting the east direction be forward.
   --oap=ANGLE -o ANGLE        Set the width angle of the OAP. [default: 50.47]
   --log10 -l                  Plot a logarithmic pcolor instead of a linear one.
-  --cmap=CMAP                 Use the following cmap [default: pastel_clear].
+  --cmap=CMAP                 Use the following cmap [default: viridis].
   --e-direction=ANGLE         The angle for the radial labels.
   --e-units=UNIT              The units for the radial labels.
   --agg                       Use the agg backend.
