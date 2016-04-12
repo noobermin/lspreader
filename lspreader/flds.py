@@ -2,58 +2,139 @@
 Functions for flds and sclr files.
 '''
 import numpy as np;
+from . import read;
+import flds as fldsm;
+from lspreader import get_header;
+import numpy as np;
+import numpy.linalg as lin;
+from pys import parse_ftuple,test,takef;
 
-def sort(d,s):
+def getvector(d,s):
     '''
-    Sort based on position. Sort with s as a tuple of the sort
-    indices and shape from first sort.
-
-    Parameters:
-    -----------
-
-    d   -- the flds/sclr data
-    s   -- (si, shape) sorting and shaping data from firstsort.
-    '''
-    labels = [ key for key in d.keys()
-               if key not in ['xs', 'ys', 'zs'] ];
-    si,shape = s;
-    for l in labels:
-        d[l] = d[l][si].reshape(shape);
-    return d;
-
-def firstsort(d):
-    '''
-    Perform a lexsort and return the sort indices and shape as a tuple.
-    '''
-    shape = [ len( np.unique(d[l]) )
-              for l in ['xs', 'ys', 'zs'] ];
-    si = np.lexsort((d['z'],d['y'],d['x']));
-    return si,shape;
-
-def stride(d,strides):
-    '''
-    Stride each shaped quantity.
+    Get a vector flds data.
 
     Parameters:
     -----------
 
-    d       -- the flds/sclr data
-    strides -- a tuple (sx,sy,sz) of strides. Leave
-               None for strides.
+    d -- flds data.
+    s -- key for the data.
     '''
-    labels = [ key for key in d.keys()
-               if key not in ['xs', 'ys', 'zs'] ];
-    sx,sy,sz = strides
-    for l in labels:
-        d[l] = d[l][::sx,::sy,::sz];
-    return d;
+    return np.array([d[s+"x"],d[s+"y"],d[s+"z"]]);
 
-def squeeze(d):
+def vector_norm(d,k):
     '''
-    Squeeze the shaped data.
+    Get a norm of vector flds data.
+
+    Parameters:
+    -----------
+
+    d -- flds data.
+    s -- key for the data.
     '''
-    labels = [ key for key in d.keys()
-               if key not in ['xs', 'ys', 'zs'] ];
-    for l in labels:
-        d[l] = np.squeeze(d[l]);
-    return d;
+    return lin.norm(getvector(d,k),axis=0)
+
+def read_indexed(i,flds=None,sclr=None,
+                 gzip=True, dir='.', vector_norms=True,
+                 keep_xs=False,gettime=False):
+    '''
+    A smart indexing reader that reads files by names. Looks for files
+    like "<dir>/flds<i>.p4<compression>" where dir and the index are
+    passed, as well as stuff from sclrs and saves them into one
+    dictionary. Essentially useful for reading by timestep instead
+    of by file. Assumes that both the flds and sclr are in the same
+    direction.
+
+    Parameters:
+    -----------
+
+    i -- index of file
+
+    Required Keywords:
+    ------------------
+
+    flds  -- list of var's to load from the flds file
+    sclr  -- list of var's to load from the sclr file
+    
+    Either one or both are required.
+
+    Keywords:
+    ---------
+
+    gzip         -- files are gzipped. Default is True.
+    dir          -- Directory to look for files. Default is .
+    vector_norms -- save the norm of the flds vectors under the
+                    the name of the quantity. Default is True.
+    keep_xs      -- Keep the edges. By default, False.
+    gettime      -- Get the timestamp.
+    '''
+    fldsname = '{}/flds{}.p4{}'.format(
+        dir, i, '.gz' if gzip else '');
+    sclrname = '{}/sclr{}.p4{}'.format(
+        dir, i, '.gz' if gzip else '');
+    if not (flds or sclr):
+        raise ValueError("Must specify flds or sclr to read.");
+    elif flds is not None and sclr is not None:
+        sd,srt=read(sclrname,
+                    var=sclr,first_sort=True, gzip=gzip);
+        fd=read(fldsname,
+                var=flds, sort=srt, gzip=gzip);
+        ret = dict(sd=sd,fd=fd);
+        ret.update({k:sd[k] for k in sd});
+        ret.update({k:fd[k] for k in fd});
+        if vector_norms:
+            ret.update({k:vector_norm(ret,k) for k in flds})
+        if gettime:
+            ret['t'] = get_header(sclrname,gzip=gzip)['timestamp'];
+    else:
+        if flds:
+            var = flds;
+            name= fldsname;
+            key = 'fd';
+        else:
+            var = sclr;
+            name= sclrname;
+            key = 'sd';
+        ret,_ = read(name,var=var,first_sort=True,gzip=gzip);
+        if flds and vector_norms:
+            ret.update({k:vector_norm(ret,k) for k in flds})
+        if gettime:
+            ret['t'] = get_header(name,gzip=gzip)['timestamp'];
+    if not keep_xs:
+        ret.pop('xs',None);
+        ret.pop('ys',None);
+        ret.pop('zs',None);
+    return ret;
+
+def restrict(d,restrict):
+    '''
+    Restrict data by indices.
+
+    Parameters:
+    ----------
+
+    d         -- the flds/sclr data
+    restrict  -- a tuple of [xmin,xmax,...] etx
+    '''
+    notqs = ['t','xs','ys','zs','fd','sd']
+    keys  = [k for k in d if k not in notqs];
+    if len(restrict) == 2:
+        for k in keys:
+            d[k] = d[k][restrict[0]:restrict[1]]
+    elif len(restrict) == 4:
+        for k in keys:
+            d[k] = d[k][
+                restrict[0]:restrict[1],
+                restrict[2]:restrict[3]
+            ];
+    elif len(restrict) == 6:
+        for k in keys:
+            d[k] = d[k][
+                restrict[0]:restrict[1],
+                restrict[2]:restrict[3],
+                restrict[4]:restrict[5]
+            ];
+    else:
+        raise ValueError("restrict of length {} is not valid".format(
+            len(restrict)));
+
+

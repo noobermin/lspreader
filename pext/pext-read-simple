@@ -4,9 +4,9 @@ USAGE="Generates pext data from a single, no restart run.
 Meant to be run from ramses if possible.
 
 Usage:
-    ./pext-read-simple [options] [<pext-dir> [<lspreader-dir>]]
+    ./pext-read-simple [options] [<pext-dir>]
 
-For <pext-dir>, it accepts a valid directory within reach of rcp and rsh.
+For <pext-dir>, it accepts a valid directory   within reach of rcp and rsh.
 For example, for /tmp/foo node02 on ramses, specify the path as
 \"node02:/tmp/foo\".
 
@@ -19,8 +19,9 @@ Options:
                          with an incomplete simulation.
     -r                   Swap z and y when calculating angles.
 "
-RDDIR="/home/ngirmang.1/lspreader"
-CONDA="/home/ngirmang.1/conda"
+[ ! -n "$ANDIR" ] && ANDIR="/home/ngirmang.1/lspplot/bin"
+[ ! -n "$RDDIR" ] && RDDIR="/home/ngirmang.1/lspreader"
+[ ! -n "$CONDA" ] && CONDA="/home/ngirmang.1/conda"
 MAXTIME=
 REVERSE=
 while getopts ':hrt:' opt; do
@@ -49,7 +50,6 @@ shift "$((OPTIND-1))"
 
 [ -e "$CONDA" ] && source "$CONDA"
 PEXTDIR=$( [ -n "$1" ] && echo $1 || echo "." )
-[ -n "$2" ]  && RDDIR="$2";
 if [ ! $PEXTDIR == "." ]; then
     rcp $PEXTDIR/pext*.p4 ./
     rcp $PEXTDIR/*.lsp ./
@@ -63,8 +63,8 @@ USEZ=$([ -n "$(cat *.lsp | grep "z-cells")" ] && echo "z" || echo "")
 
 DIMS=-$USEX$USEY$USEZ
 cp $RDDIR/bin/pext.py $RDDIR/bin/arrcat.py \
-   $RDDIR/pext/angular.py $RDDIR/pext/quantities.py \
-   $RDDIR/pext/angularmov.py \
+   $ANDIR/bin/angular.py $ANDIR/bin/quantities.py \
+   $ANDIR/bin/angularmov.py \
    ./
 echo "\
 #!/usr/bin/env bash

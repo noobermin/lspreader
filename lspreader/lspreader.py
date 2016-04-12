@@ -119,7 +119,36 @@ def get_header(file,**kw):
         return header, file.tell()-size;
     return header;
 
-def read_flds(file, header, var, vprint, vector=True,remove_edges=False):
+
+def flds_firstsort(d):
+    '''
+    Perform a lexsort and return the sort indices and shape as a tuple.
+    '''
+    shape = [ len( np.unique(d[l]) )
+              for l in ['xs', 'ys', 'zs'] ];
+    si = np.lexsort((d['z'],d['y'],d['x']));
+    return si,shape;
+def flds_sort(d,s):
+    '''
+    Sort based on position. Sort with s as a tuple of the sort
+    indices and shape from first sort.
+
+    Parameters:
+    -----------
+
+    d   -- the flds/sclr data
+    s   -- (si, shape) sorting and shaping data from firstsort.
+    '''
+    labels = [ key for key in d.keys()
+               if key not in ['t', 'xs', 'ys', 'zs', 'fd', 'sd'] ];
+    si,shape = s;
+    for l in labels:
+        d[l] = d[l][si].reshape(shape);
+        d[l] = np.squeeze(d[l]);
+    return d;
+def read_flds(file, header, var, vprint,
+              vector=True,keep_edges=False,
+              sort=None,first_sort=False):
     if vector:
         size=3;
         readin = set();
@@ -143,7 +172,6 @@ def read_flds(file, header, var, vprint, vector=True,remove_edges=False):
         vprint('reading domain with dimensions {}x{}x{}={}.'.format(nI,nJ,nK,nAll));
         d={}
         d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
-        #d['x'], d['y'], d['z'] = np.vstack(np.meshgrid(Ip,Jp,Kp,indexing='ij')).reshape(3,-1);
         d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
         d['z'], d['y'], d['x'] = d['z'].ravel(), d['y'].ravel(), d['x'].ravel();
         for quantity in qs:
@@ -158,7 +186,7 @@ def read_flds(file, header, var, vprint, vector=True,remove_edges=False):
                     d[quantity+'x'],d[quantity+'y'],d[quantity+'z']= data;
                     del data, d[quantity];
         doms.append(d);
-    if remove_edges:
+    if not keep_edges:
         vprint("removing edges");
         dims = ['xs','ys','zs'];
         readqs = [k for k in doms[0].keys()
@@ -180,9 +208,14 @@ def read_flds(file, header, var, vprint, vector=True,remove_edges=False):
         doms[:] = [cutdom(d) for d in doms];
     vprint('Stringing domains together.');
     out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
-    vprint('Converting to little-endian');
     for k in out:
         out[k] = out[k].astype('f4');
+    if not keep_edges:
+        vprint('sorting....');
+        sort = flds_firstsort(out)
+        out = flds_sort(out,sort);
+        if first_sort:
+            out = (out, sort);
     return out;
 
 def iseof(file):
@@ -251,8 +284,12 @@ def read(fname,**kw):
     var          -- list of quantities to be read. For fields, this can consist
                     of strings that include vector components, e.g., 'Ex'. If 
                     None (default), read all quantities.
-    remove_edges -- If set to truthy, then remove the edges from domains before
-                    concatenation.
+    keep_edges   -- If set to truthy, then don't remove the edges from domains before
+                    concatenation and don't reshape the flds data.
+    sort         -- If not None, sort using these indices, useful for avoiding
+                    resorting. If True and not an ndarray, just sort.
+    first_sort   -- If truthy, sort, and return the sort data for future flds
+                    that should have the same shape.
     '''
     openf = gzip.open if test(kw, 'gzip') else open;
     with openf(fname,'rb') as file:
@@ -271,16 +308,24 @@ def read(fname,**kw):
                 var=[i[0] for i in header['quantities']];
             else:
                 var=kw['var'];
-            if test(kw, 'remove_edges'):
-                remove_edges=True;
+            keep_edges = test(kw, 'keep_edges');
+            first_sort = test(kw, 'first_sort');
+            if test(kw,'sort'):
+                sort = kw['sort']
             else:
-                remove_edges=False;
+                sort = None;
         readers = {
             2: lambda: read_flds(
-                file,header,var, vprint, remove_edges=remove_edges),
+                file,header,var,vprint,
+                keep_edges=keep_edges,
+                first_sort=first_sort,
+                sort=sort),
             3: lambda: read_flds(
                 file,header,var, vprint,
-                remove_edges=remove_edges,vector=False),
+                keep_edges=keep_edges,
+                first_sort=first_sort,
+                sort=sort,
+                vector=False),
             6: lambda: read_movie(file, header),
             10:lambda: read_pext(file,header)
         };
@@ -288,6 +333,5 @@ def read(fname,**kw):
         try:
             d = readers[header['dump_type']]();
         except KeyError:
-            d = None;
             raise NotImplementedError("Other file types not implemented yet!");
     return d;

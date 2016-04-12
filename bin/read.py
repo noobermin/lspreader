@@ -9,6 +9,4 @@ from lspreader.misc import dump_pickle;
 from docopt import docopt;
 
 opts = docopt(__doc__,help=True);
-dump_pickle(opts['<output>'],
-            read(opts['<input>']));
-
+dump_pickle(opts['<output>'],read(opts['<input>']));

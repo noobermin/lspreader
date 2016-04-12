@@ -77,7 +77,7 @@ massE = float(opts['--massE']) if opts['--massE'] else None;
 d = add_quantities(d, coords, massE=massE);
 if opts['--dict']:
     d = {k:d[k] for k in d.dtype.names};
-    from misc import dump_pickle;
+    from pys import dump_pickle;
     dump_pickle(outname, d);
 else:
     np.save(outname, d);

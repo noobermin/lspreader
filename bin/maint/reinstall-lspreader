@@ -8,5 +8,4 @@ usage: ./reinstall-lspreader [lspreader-git-dir]"
 
 RDDIR=$( [ -n "$1" ] && echo "$1" || echo "../../" )
 cd $RDDIR
-yes | pip uninstall lspreader
-pip install --user "$(pwd)"
+pip install --user --upgrade "$(pwd)"
