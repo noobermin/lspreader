@@ -28,10 +28,6 @@ import os
 def _vprint(s):
     print(s);
 opts = docopt(__doc__,help=True);
-if not opts['<output>']:
-    outname = re.search("(.*)\.lsp$",lspf).group(1)+"-pext";
-else:
-    outname = opts['<output>'];
 vprint = _vprint if opts['--verbose'] else  (lambda s: None);
 path = opts['--path'];
 
@@ -52,6 +48,10 @@ else:
     lspf=[f for f in files if re.search(".*\.lsp$",f)][0];
 with open(lspf,"r") as f:
     lsp=f.read();
+if not opts['<output>']:
+    outname = re.search("(.*)\.lsp$",lspf).group(1)+"-pext";
+else:
+    outname = opts['<output>'];
 dim=getdim(lsp);
 latetime = float(opts['--late-time']) if opts['--late-time'] else None;
 vprint('reading in files');
