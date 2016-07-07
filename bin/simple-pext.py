@@ -28,6 +28,10 @@ import os
 def _vprint(s):
     print(s);
 opts = docopt(__doc__,help=True);
+if not opts['<output>']:
+    outname = re.search("(.*)\.lsp$",lspf).group(1)+"-pext";
+else:
+    outname = opts['<output>'];
 vprint = _vprint if opts['--verbose'] else  (lambda s: None);
 path = opts['--path'];
 
@@ -60,6 +64,9 @@ vprint('length of d={} after remove empties'.format(len(d)));
 vprint('cutting out duplicate times');
 if len(d) > 1:
     d = np.concatenate(d);
+elif d == []:
+    print("empty pext");
+    quit();
 else:
     d = d[0];
 vprint('sorting by times')
@@ -72,8 +79,4 @@ if opts['--reverse']:
     dim = dim[:-2] + list(reversed(dim[-2:]))
 massE = float(opts['--massE']) if opts['--massE'] else None;
 d = add_quantities(d, dim, massE=massE);
-if not opts['<output>']:
-    outname = re.search("(.*)\.lsp$",lspf).group(1)+"-pext";
-else:
-    outname = opts['<output>'];
 np.save(outname, d);
