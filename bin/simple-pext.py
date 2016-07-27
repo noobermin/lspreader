@@ -23,8 +23,10 @@ from lspreader.pext import add_quantities;
 import numpy as np;
 from pys import parse_ituple;
 import re;
-from lspreader.dotlsp import getdim;
+from lspreader.dotlsp import getdim,getpexts
 import os
+import numpy.lib.recfunctions as rfn;
+
 def _vprint(s):
     print(s);
 opts = docopt(__doc__,help=True);
@@ -41,7 +43,9 @@ else:
 key = [ float(re.search("pext([0-9]+).p4",f).group(1))
         for f in pext ];
 pext = [i for i,k in zip(pext,key)
-        if mn <= k <= mx]
+        if mn <= k <= mx];
+key  = [i for i in key
+        if mn <= k <= mx];
 if opts['--lsp']:
     lspf=opts['--lsp'];
 else:
@@ -53,10 +57,17 @@ if not opts['<output>']:
 else:
     outname = opts['<output>'];
 dim=getdim(lsp);
+pexts = getpexts(lsp);
 latetime = float(opts['--late-time']) if opts['--late-time'] else None;
 vprint('reading in files');
 d = [ rd.read(name)
       for name in pext ];
+
+d[:] = [
+    rfn.rec_append_fields(
+        id, 'species',
+        np.ones(len(id)).astype(int)*pexts[i]['species'])
+    for id,i in zip(d,key) ];
 vprint('length of d={}'.format(len(d)));
 
 d = [ i for i in d if i['t'].shape[0] > 0];
