@@ -13,13 +13,8 @@ Options:
 '''
 
 from lspreader import lspreader as rd;
-import cPickle;
 import numpy as np;
-import matplotlib.pyplot as plt;
-import scipy.interpolate as interp;
 from docopt import docopt;
-from time import time;
-
 
 opts=docopt(__doc__,help=True);
 verbose = opts['--verbose'];
