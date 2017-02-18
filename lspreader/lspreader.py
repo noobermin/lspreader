@@ -5,7 +5,7 @@ Reader for LSP output xdr files (.p4's)
 import xdrlib as xdr;
 import numpy as np;
 import gzip;
-from misc import test;
+from .misc import test;
 
 #get basic dtypes
 def get_int(file,N=1,forcearray=False):

@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='lspreader',
-      version='0.1.2',
+      version='0.1.2r1',
       description='A set of python readers for the code LSP',
       url='http://github.com/noobermin/lspreader',
       author='noobermin',
