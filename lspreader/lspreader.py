@@ -3,6 +3,7 @@ Reader for LSP output xdr files (.p4's)
 
 '''
 import xdrlib as xdr;
+import re;
 import numpy as np;
 import gzip;
 from misc import test;
@@ -291,6 +292,8 @@ def read(fname,**kw):
     first_sort   -- If truthy, sort, and return the sort data for future flds
                     that should have the same shape.
     '''
+    if test(kw,'gzip') and kw['gzip'] == 'guess':
+        kw['gzip'] = re.search(r'\.gz$', fname) is not None;
     openf = gzip.open if test(kw, 'gzip') else open;
     with openf(fname,'rb') as file:
         if test(kw,'override'):

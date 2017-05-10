@@ -35,7 +35,7 @@ def vector_norm(d,k):
     return lin.norm(getvector(d,k),axis=0)
 
 def read_indexed(i,flds=None,sclr=None,
-                 gzip=True, dir='.', vector_norms=True,
+                 gzip='guess', dir='.', vector_norms=True,
                  keep_xs=False,gettime=False):
     '''
     A smart indexing reader that reads files by names. Looks for files
@@ -61,7 +61,7 @@ def read_indexed(i,flds=None,sclr=None,
     Keywords:
     ---------
 
-    gzip         -- files are gzipped. Default is True. If gzip is "guess",
+    gzip         -- files are gzipped. If gzip is "guess",
                     find a matching file.
     dir          -- Directory to look for files. Default is .
     vector_norms -- save the norm of the flds vectors under the
@@ -76,7 +76,6 @@ def read_indexed(i,flds=None,sclr=None,
     if gzip == 'guess':
         fldsname = fldsp4 if os.path.exists(fldsp4) else fldsgz
         sclrname = sclrp4 if os.path.exists(sclrp4) else sclrgz
-        print(fldsname);
     else:
         fldsname = fldsgz if gzip else fldsp4;
         sclrname = sclrgz if gzip else sclrp4;
