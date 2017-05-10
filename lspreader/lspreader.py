@@ -67,7 +67,7 @@ def get_header(file,**kw):
     if type(file) == str:
         #if called with a filename, recall with opened file.
         if test(kw, "gzip") and kw['gzip'] == 'guess':
-            kw['gzip'] = re.search(r'\.gz$', fname) is not None;
+            kw['gzip'] = re.search(r'\.gz$', file) is not None;
         if test(kw, "gzip"):
             with gzip.open(file,'r') as f:
                 return get_header(f,**kw);
