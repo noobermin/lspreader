@@ -1,7 +1,9 @@
 '''
 Functions for flds and sclr files.
 '''
-from lspreader.lspreader import get_header,read
+import lspreader
+from lspreader import read;
+from .lspreader import get_header;
 import numpy as np;
 import numpy.linalg as lin;
 import os;
