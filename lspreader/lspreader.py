@@ -294,7 +294,9 @@ def read(fname,**kw):
     '''
     if test(kw,'gzip') and kw['gzip'] == 'guess':
         kw['gzip'] = re.search(r'\.gz$', fname) is not None;
+        print(kw['gzip']);
     openf = gzip.open if test(kw, 'gzip') else open;
+    print(openf);
     with openf(fname,'rb') as file:
         if test(kw,'override'):
             dump, start = kw['override'];
