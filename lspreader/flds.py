@@ -7,6 +7,7 @@ import flds as fldsm;
 from lspreader import get_header;
 import numpy as np;
 import numpy.linalg as lin;
+import os;
 from pys import parse_ftuple,test,takef;
 
 def getvector(d,s):
@@ -60,22 +61,29 @@ def read_indexed(i,flds=None,sclr=None,
     Keywords:
     ---------
 
-    gzip         -- files are gzipped. Default is True.
+    gzip         -- files are gzipped. Default is True. If gzip is "guess",
+                    find a matching file.
     dir          -- Directory to look for files. Default is .
     vector_norms -- save the norm of the flds vectors under the
                     the name of the quantity. Default is True.
     keep_xs      -- Keep the edges. By default, False.
     gettime      -- Get the timestamp.
     '''
-    fldsname = '{}/flds{}.p4{}'.format(
-        dir, i, '.gz' if gzip else '');
-    sclrname = '{}/sclr{}.p4{}'.format(
-        dir, i, '.gz' if gzip else '');
+    fldsp4  = '{}/flds{}.p4'.format(dir,i);
+    sclrp4  = '{}/sclr{}.p4'.format(dir,i);
+    fldsgz  = fldsp4 + '.gz';
+    sclrgz  = sclrp4 + '.gz';
+    if gzip == 'guess':
+        fldsname = fldsp4 if os.file.exists(fldsp4) else fldsgz
+        sclrname = sclrp4 if os.file.exists(sclrp4) else fldsgz
+    else:
+        fldsname = fldsgz if gzip else fldsp4;
+        sclrname = sclrgz if gzip else sclrp4;
     if not (flds or sclr):
         raise ValueError("Must specify flds or sclr to read.");
     elif flds is not None and sclr is not None:
         sd,srt=read(sclrname,
-                    var=sclr,first_sort=True, gzip=gzip);
+                    var=sclr,first_sort=True, gzip='guess');
         fd=read(fldsname,
                 var=flds, sort=srt, gzip=gzip);
         ret = dict(sd=sd,fd=fd);
@@ -89,12 +97,10 @@ def read_indexed(i,flds=None,sclr=None,
         if flds:
             var = flds;
             name= fldsname;
-            key = 'fd';
         else:
             var = sclr;
             name= sclrname;
-            key = 'sd';
-        ret,_ = read(name,var=var,first_sort=True,gzip=gzip);
+        ret,_ = read(name,var=var,first_sort=True,gzip='guess');
         if flds and vector_norms:
             ret.update({k:vector_norm(ret,k) for k in flds})
         if gettime:
