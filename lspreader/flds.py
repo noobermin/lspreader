@@ -83,14 +83,14 @@ def read_indexed(i,flds=None,sclr=None,
         sd,srt=read(sclrname,
                     var=sclr,first_sort=True, gzip='guess');
         fd=read(fldsname,
-                var=flds, sort=srt, gzip=gzip);
+                var=flds, sort=srt, gzip='guess');
         ret = dict(sd=sd,fd=fd);
         ret.update({k:sd[k] for k in sd});
         ret.update({k:fd[k] for k in fd});
         if vector_norms:
             ret.update({k:vector_norm(ret,k) for k in flds})
         if gettime:
-            ret['t'] = get_header(sclrname,gzip=gzip)['timestamp'];
+            ret['t'] = get_header(sclrname,gzip='guess')['timestamp'];
     else:
         if flds:
             var = flds;
@@ -102,7 +102,7 @@ def read_indexed(i,flds=None,sclr=None,
         if flds and vector_norms:
             ret.update({k:vector_norm(ret,k) for k in flds})
         if gettime:
-            ret['t'] = get_header(name,gzip=gzip)['timestamp'];
+            ret['t'] = get_header(name,gzip='guess')['timestamp'];
     if not keep_xs:
         ret.pop('xs',None);
         ret.pop('ys',None);
