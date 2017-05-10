@@ -74,8 +74,8 @@ def read_indexed(i,flds=None,sclr=None,
     fldsgz  = fldsp4 + '.gz';
     sclrgz  = sclrp4 + '.gz';
     if gzip == 'guess':
-        fldsname = fldsp4 if os.file.exists(fldsp4) else fldsgz
-        sclrname = sclrp4 if os.file.exists(sclrp4) else fldsgz
+        fldsname = fldsp4 if os.path.exists(fldsp4) else fldsgz
+        sclrname = sclrp4 if os.path.exists(sclrp4) else fldsgz
     else:
         fldsname = fldsgz if gzip else fldsp4;
         sclrname = sclrgz if gzip else sclrp4;
