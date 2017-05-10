@@ -5,7 +5,6 @@ from lspreader.lspreader import get_header,read
 import numpy as np;
 import numpy.linalg as lin;
 import os;
-from pys import parse_ftuple,test,takef;
 
 def getvector(d,s):
     '''

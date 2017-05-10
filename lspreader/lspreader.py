@@ -6,7 +6,7 @@ import xdrlib as xdr;
 import re;
 import numpy as np;
 import gzip;
-from misc import test;
+from pys import test;
 
 #get basic dtypes
 def get_int(file,N=1,forcearray=False):

@@ -4,7 +4,8 @@ pmovie reading functions
 
 import numpy as np;
 import numpy.lib.recfunctions as rfn;
-from . import read,misc;
+from lspreader import read;
+
 #
 # this is mainly hashing
 #
