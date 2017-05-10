@@ -1,7 +1,6 @@
 '''
 Useful functions for pext files.
 '''
-import lspreader as rd;
 import numpy as np;
 import itertools as itools;
 import numpy.lib.recfunctions as rfn;
