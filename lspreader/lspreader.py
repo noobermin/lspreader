@@ -92,11 +92,11 @@ def get_header(file,**kw):
         nparams = get_int(file);
         header['units'] = [get_str(file) for i in range(nparams)];
         labels = ['q', 'x', 'y', 'z', 'ux', 'uy', 'uz']
-        if n == 7:
+        if nparams == 7:
             pass;
-        elif n == 8 or n == 11:
+        elif nparams == 8 or nparams == 11:
             labels += ['H']
-        elif n == 10 or n == 11:
+        elif nparams == 10 or nparams == 11:
             labels += ['xi', 'yi', 'zi'];
         else:
             raise NotImplementedError(
