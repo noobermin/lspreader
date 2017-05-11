@@ -87,9 +87,10 @@ def get_header(file,**kw):
         header.update(d);
         #reading params
         
-        ns = get_int(file);
-        n = get_int(file);
-        header['units'] = [get_str(file) for i in range(n)];
+        header['num_species'] = get_int(file);
+        header['num_particles'] = get_int(file);
+        nparams = get_int(file);
+        header['units'] = [get_str(file) for i in range(nparams)];
         labels = ['q', 'x', 'y', 'z', 'ux', 'uy', 'uz']
         if n == 7:
             pass;
