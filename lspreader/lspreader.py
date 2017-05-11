@@ -82,10 +82,11 @@ def get_header(file,**kw):
     if header['dump_type'] == 1:
         #this is a particle dump file
         d = get_dict(file,
-            'iiii',
-            ['geometry','sflagsx','sflagsy','sflagsz']);
+            'fiiii',
+            ['timestamp','geometry','sflagsx','sflagsy','sflagsz']);
         header.update(d);
         #reading params
+        
         ns = get_int(file);
         n = get_int(file);
         header['units'] = [get_str(file) for i in range(n)];
