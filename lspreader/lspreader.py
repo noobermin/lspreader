@@ -79,6 +79,27 @@ def get_header(file,**kw):
     header = get_dict(
         file,'iiss',
         ['dump_type','dversion', 'title','revision']);
+    if header['dump_type'] == 1:
+        #this is a particle dump file
+        d = get_dict(file,
+            'iiii',
+            ['geometry','sflagsx','sflagsy','sflagsz']);
+        header.update(d);
+        #reading params
+        ns = get_int(file);
+        n = get_int(file);
+        header['units'] = [get_str(file) for i in range(n)];
+        labels = ['q', 'x', 'y', 'z', 'ux', 'uy', 'uz']
+        if n == 7:
+            pass;
+        elif n == 8 or n == 11:
+            labels += ['H']
+        elif n == 10 or n == 11:
+            labels += ['xi', 'yi', 'zi'];
+        else:
+            raise NotImplementedError(
+                'Not implemented for these number of parameters:{}.'.format(n));
+        header['params'] = list(zip(labels,header['units']));
     if header['dump_type'] == 2 or header['dump_type'] == 3:
         #this is a fields file or a scalars file.
         d = get_dict(file,'fii',['timestamp','geometry','domains']);
@@ -106,7 +127,8 @@ def get_header(file,**kw):
         elif n == 11:
             labels+=['xi','yi','zi'];
         else:
-            raise NotImplementedError('Not implemented for these number of parameters:{}.'.format(n));
+            raise NotImplementedError(
+                'Not implemented for these number of parameters:{}.'.format(n));
         header['params'] = [
             (label,unit) for (label,unit,flag) in zip(labels,units,flags) if flag
         ];
@@ -249,6 +271,12 @@ def read_movie(file, header):
         del frames[i]['pos'];
     return frames;
 
+def read_particles(file, header):
+    params,_  = zip(*header['params']);
+    dt = list(zip(params, ['>i4']+['>f4']*len(params)));
+    out = np.fromfile(file, dtype=dt,count=-1);
+    return out;
+
 def read_pext(file, header):
     nparams = len(header['quantities']);
     params = ['t','q','x','y','z','ux','uy','uz'];
@@ -320,6 +348,7 @@ def read(fname,**kw):
             else:
                 sort = None;
         readers = {
+            1: lambda: read_particles(file, header),
             2: lambda: read_flds(
                 file,header,var,vprint,
                 keep_edges=keep_edges,
