@@ -102,7 +102,7 @@ def get_header(file,**kw):
             raise NotImplementedError(
                 'Not implemented for these number of parameters:{}.'.format(n));
         header['params'] = list(zip(labels,header['units']));
-    if header['dump_type'] == 2 or header['dump_type'] == 3:
+    elif header['dump_type'] == 2 or header['dump_type'] == 3:
         #this is a fields file or a scalars file.
         d = get_dict(file,'fii',['timestamp','geometry','domains']);
         header.update(d);
