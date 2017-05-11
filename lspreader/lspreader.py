@@ -90,7 +90,7 @@ def get_header(file,**kw):
         header['num_species'] = get_int(file);
         header['num_particles'] = get_int(file);
         nparams = get_int(file);
-        header['units'] = [get_str(file) for i in range(nparams)];
+        units = [get_str(file) for i in range(nparams)];
         labels = ['q', 'x', 'y', 'z', 'ux', 'uy', 'uz']
         if nparams == 7:
             pass;
@@ -101,7 +101,7 @@ def get_header(file,**kw):
         else:
             raise NotImplementedError(
                 'Not implemented for these number of parameters:{}.'.format(n));
-        header['params'] = list(zip(labels,header['units']));
+        header['params'] = list(zip(labels,units));
     elif header['dump_type'] == 2 or header['dump_type'] == 3:
         #this is a fields file or a scalars file.
         d = get_dict(file,'fii',['timestamp','geometry','domains']);
