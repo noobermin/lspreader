@@ -173,9 +173,12 @@ def flds_sort(d,s):
         d[l] = d[l][si].reshape(shape);
         d[l] = np.squeeze(d[l]);
     return d;
+
 def read_flds(file, header, var, vprint,
               vector=True,keep_edges=False,
-              sort=None,first_sort=False):
+              sort=None,first_sort=False,
+              keep_xs=False,
+              return_array=False):
     if vector:
         size=3;
         readin = set();
@@ -238,11 +241,21 @@ def read_flds(file, header, var, vprint,
     for k in out:
         out[k] = out[k].astype('f4');
     if not keep_edges:
-        vprint('sorting....');
+        vprint('sorting rows...');
         sort = flds_firstsort(out)
         out = flds_sort(out,sort);
         if first_sort:
             out = (out, sort);
+    if not keep_xs:
+        out.pop('xs',None);
+        out.pop('ys',None);
+        out.pop('zs',None);
+        if return_array:
+            dt = list(zip(sorted(out.keys()),['f4']*len(out)));
+            rout = np.zeros(d['x'].shape,dtype=dt);
+            for k in out:
+                rout[k] = out[k];
+            out=rout;
     return out;
 
 def iseof(file):
@@ -323,6 +336,10 @@ def read(fname,**kw):
                     resorting. If True and not an ndarray, just sort.
     first_sort   -- If truthy, sort, and return the sort data for future flds
                     that should have the same shape.
+    keep_xs      -- Keep the xs's, that is, the grid information. Usually redundant
+                    with x,y,z returned.
+    return_array -- If set to truthy, then try to return a numpy array with a dtype.
+                    Requires of course that the quantities have the same shape.
     '''
     if test(kw,'gzip') and kw['gzip'] == 'guess':
         kw['gzip'] = re.search(r'\.gz$', fname) is not None;
@@ -333,10 +350,11 @@ def read(fname,**kw):
             file.seek(start);
             header = {'dump_type': dump};
             if not test(kw, 'var') and 2 <= header['dump_type'] <= 3 :
-                raise ValueError("If you want to force to read as a scalar, you need to supply the quantities")
+                raise ValueError(
+                    "If you want to force to read as a scalar, you need to supply the quantities"
+                );
         else:
             header = get_header(file);
-        
         vprint = kw['vprint'] if test(kw, 'vprint') else lambda s: None;
         if 2 <= header['dump_type'] <= 3 :
             if not test(kw, 'var'):
@@ -349,18 +367,25 @@ def read(fname,**kw):
                 sort = kw['sort']
             else:
                 sort = None;
+            keep_xs = test(kw, 'keep_xs');
+            return_array = test(kw, 'return_array');
         readers = {
             1: lambda: read_particles(file, header),
             2: lambda: read_flds(
                 file,header,var,vprint,
                 keep_edges=keep_edges,
                 first_sort=first_sort,
+                sort=sort,
+                keep_xs=keep_xs,
+                return_array=array,
                 sort=sort),
             3: lambda: read_flds(
                 file,header,var, vprint,
                 keep_edges=keep_edges,
                 first_sort=first_sort,
                 sort=sort,
+                keep_xs=keep_xs,
+                return_array=array,
                 vector=False),
             6: lambda: read_movie(file, header),
             10:lambda: read_pext(file,header)

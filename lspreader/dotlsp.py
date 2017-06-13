@@ -7,7 +7,8 @@ getrx = lambda rx:float(re.search(rx,lines,flags=re.MULTILINE).group(1));
 
 def getdim(lsp):
     '''
-    Obtain the dimensionality of a .lsp file
+    Obtain the dimensionality of a .lsp file. This should work for all well
+    formatted .lsp files.
 
     Parameters:
     -----------
@@ -23,7 +24,8 @@ def getdim(lsp):
 
 def getpexts(lsp):
     '''
-    Get information from pext planes.
+    Get information from pext planes. This might or might not work, use with
+    caution!
 
     Parameters:
     -----------

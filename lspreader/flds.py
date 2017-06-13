@@ -81,9 +81,11 @@ def read_indexed(i,flds=None,sclr=None,
         raise ValueError("Must specify flds or sclr to read.");
     elif flds is not None and sclr is not None:
         sd,srt=read(sclrname,
-                    var=sclr,first_sort=True, gzip='guess');
+                    var=sclr,first_sort=True, gzip='guess',
+                    keep_xs=keep_xs);
         fd=read(fldsname,
-                var=flds, sort=srt, gzip='guess');
+                var=flds, sort=srt, gzip='guess',
+                keep_xs=keep_xs);
         ret = dict(sd=sd,fd=fd);
         ret.update({k:sd[k] for k in sd});
         ret.update({k:fd[k] for k in fd});
@@ -103,10 +105,6 @@ def read_indexed(i,flds=None,sclr=None,
             ret.update({k:vector_norm(ret,k) for k in flds})
         if gettime:
             ret['t'] = get_header(name,gzip='guess')['timestamp'];
-    if not keep_xs:
-        ret.pop('xs',None);
-        ret.pop('ys',None);
-        ret.pop('zs',None);
     return ret;
 
 def restrict(d,restrict):
