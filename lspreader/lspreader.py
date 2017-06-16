@@ -7,7 +7,11 @@ import re;
 import numpy as np;
 import gzip;
 from pys import test;
-
+import sys;
+if sys.version_info >= (3,0):
+    strenc = lambda b: b.decode('latin1');
+else:
+    strenc = lambda b: b;
 #get basic dtypes
 def get_int(file,N=1,forcearray=False):
     ret=np.frombuffer(file.read(4*N),dtype='>i4',count=N);
@@ -33,7 +37,8 @@ def get_str(file):
     size=l1;
     if l1%4:
         size+=4-l1%4;
-    return xdr.Unpacker(file.read(size)).unpack_fstring(l1);
+    #fu python3
+    return strenc(xdr.Unpacker(file.read(size)).unpack_fstring(l1));
 
 def get_list(file,fmt):
     '''makes a list out of the fmt from the LspOutput f using the format
@@ -251,9 +256,12 @@ def read_flds(file, header, var, vprint,
         out.pop('ys',None);
         out.pop('zs',None);
         if return_array:
-            dt = list(zip(sorted(out.keys()),['f4']*len(out)));
-            rout = np.zeros(d['x'].shape,dtype=dt);
-            for k in out:
+            vprint('stuffing into array'.format(k));
+            keys = sorted(out.keys());
+            dt = list(zip(keys,['f4']*len(out)));
+            rout = np.zeros(out['x'].shape,dtype=dt);
+            for k in keys:
+                vprint('saving {}'.format(k));
                 rout[k] = out[k];
             out=rout;
     return out;
@@ -377,15 +385,14 @@ def read(fname,**kw):
                 first_sort=first_sort,
                 sort=sort,
                 keep_xs=keep_xs,
-                return_array=array,
-                sort=sort),
+                return_array=return_array),
             3: lambda: read_flds(
                 file,header,var, vprint,
                 keep_edges=keep_edges,
                 first_sort=first_sort,
                 sort=sort,
                 keep_xs=keep_xs,
-                return_array=array,
+                return_array=return_array,
                 vector=False),
             6: lambda: read_movie(file, header),
             10:lambda: read_pext(file,header)
