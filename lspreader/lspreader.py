@@ -249,8 +249,6 @@ def read_flds(file, header, var, vprint,
         vprint('sorting rows...');
         sort = flds_firstsort(out)
         out = flds_sort(out,sort);
-        if first_sort:
-            out = (out, sort);
     if not keep_xs:
         out.pop('xs',None);
         out.pop('ys',None);
@@ -264,6 +262,8 @@ def read_flds(file, header, var, vprint,
                 vprint('saving {}'.format(k));
                 rout[k] = out[k];
             out=rout;
+    if first_sort and not keep_edges:
+        out = (out, sort);
     return out;
 
 def iseof(file):
