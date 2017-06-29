@@ -23,8 +23,8 @@ Options:
 "
 NODES=1
 SERVER="ramses"
-RDDIR="/home/ngirmang.1/lspreader"
-CONDA="/home/ngirmang.1/conda"
+RDDIR=${RDDIR:-"/home/ngirmang.1/lspreader"}
+CONDA=${CONDA:-"/home/ngirmang.1/conda"}
 RAMSESNODE=
 MYSCANSCRIPT=Escan.py
 ZIPPED=--gzip
