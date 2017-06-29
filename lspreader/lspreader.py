@@ -74,10 +74,10 @@ def get_header(file,**kw):
         if test(kw, "gzip") and kw['gzip'] == 'guess':
             kw['gzip'] = re.search(r'\.gz$', file) is not None;
         if test(kw, "gzip"):
-            with gzip.open(file,'r') as f:
+            with gzip.open(file,'rb') as f:
                 return get_header(f,**kw);
         else:
-            with open(file,'r') as f:
+            with open(file,'rb') as f:
                 return get_header(f,**kw);
     if test(kw, "size"):
         size = file.tell();
@@ -115,7 +115,7 @@ def get_header(file,**kw):
         n = get_int(file);
         names=[get_str(file) for i in range(n)];
         units=[get_str(file) for i in range(n)];
-        header['quantities'] = zip(names,units);
+        header['quantities'] = list(zip(names,units));
     elif header['dump_type'] == 6:
         #this is a particle movie file
         d = get_dict(file,
