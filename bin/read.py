@@ -17,6 +17,8 @@ import re;
 
 opts = docopt(__doc__,help=True);
 if opts['--npy'] or (re.search("\.npy$",opts['<output>']) and not opts['--pickle']):
-    np.save(opts['<output>'],read(opts['<input>']));
+    np.save(
+        opts['<output>'],
+        read(opts['<input>'],return_array=True,gzip='guess'),);
 else:
-    dump_pickle(opts['<output>'],read(opts['<input>']));
+    dump_pickle(opts['<output>'],read(opts['<input>'],gzip='guess'));
