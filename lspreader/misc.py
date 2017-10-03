@@ -1,8 +1,10 @@
 '''
 Miscellaneous shared definitions.
 '''
-
-import cPickle as pickle;
+try:
+    import cPickle as pickle;
+except ImportError:
+    import pickle
 import numpy as np;
 from matplotlib import colors;
 import h5py as h5;

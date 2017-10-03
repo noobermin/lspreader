@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 '''
 Read a pmovie. In the absense of an output name, output
 the name based on the frame step. With an output name, and
@@ -25,16 +25,19 @@ Options:
                       output to DFILE.
     --dir=D -D D      Output to this directory if given not <output> name.
     --x -x            Use X as a spatial dimension. Similar options below are
-                      for Y and Z. If none are passed, assume 3D cartesian.
+                      for Y and Z. If none are passed, guess based on .lsp file
+                      in the directory of input.
     --y -y            See above.
     --z -z            See above.
 '''
 from lspreader import lspreader as rd;
 from lspreader.pmovie import firsthash, genhash, addhash, sortframe
-from lspreader.misc import dump_pickle, h5w, mkvprint,  readfile;
+from lspreader.misc import h5w;
+from pys import dump_pickle, load_pickle, mkvprint;
 from docopt import docopt;
 import h5py as h5;
 import numpy as np;
+import re;
 
 def hdfoutput(outname, frames, dozip=False):
     '''Outputs the frames to an hdf file.'''
@@ -47,26 +50,19 @@ def hdfoutput(outname, frames, dozip=False):
 if __name__=='__main__':
     opts = docopt(__doc__,help=True);
     vprint = mkvprint(opts);
-    dims=[]
-    if opts['--x']: dims.append('xi');
-    if opts['--y']: dims.append('yi');
-    if opts['--z']: dims.append('zi');
-    if len(dims)==0:
-        dims=['xi','yi','zi'];
     #reading in using the reader.
-    frames=rd.read(opts['<input>'], gzip=opts['--gzip']);
-    
+    frames=rd.read(opts['<input>'], gzip='guess');
     if opts['--sort']:
         vprint("sorting...");
         frames[:] = [sortframe(frame) for frame in frames];
         vprint("done");
     #experimental hashing
-    if opts['--firsthash']:
-        d=firsthash(frames[0],dims, removedupes=True);
-        dump_pickle(opts['--firsthash'], d);
-        frames[:] = [addhash(frame,d,removedupes=True) for frame in frames];
-    elif opts['--hash']:
-        d = readfile(opts['--hash'],dumpfull=True);
+    if opts['--firsthash'] or opts['--hash']:
+        if opts['--firsthash']:
+            d=firsthash(frames[0], removedupes=True);
+            dump_pickle(opts['--firsthash'], d);
+        else:
+            d = load_pickle(opts['--hash']);
         frames[:] = [addhash(frame,d,removedupes=True) for frame in frames];
     #outputting.
     if opts['--hdf']:

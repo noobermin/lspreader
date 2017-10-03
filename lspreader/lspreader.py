@@ -286,7 +286,7 @@ def read_movie(file, header):
         frames.append(d);
     for i,d in enumerate(frames):
         N = d['pnum'];
-        lt=[('ip','>i4')]+zip(params,['>f4']*nparams);
+        lt=[('ip','>i4')]+list(zip(params,['>f4']*nparams));
         file.seek(d['pos']);
         arr=np.frombuffer(file.read(N*4*len(lt)),dtype=np.dtype(lt),count=N);
         arr.flags.writeable = True;

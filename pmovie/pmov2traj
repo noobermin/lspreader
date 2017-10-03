@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+USAGE="Converts pmovies into a trajectory.
+
+Usage:
+    ./pmov2traj [options] <pmovie-dir>
+
+For <pmovie-dir>, it accepts a valid directory within reach of rcp and rsh.
+For example, for /tmp/foo node02 on ramses, specify the path as
+\"node02:/tmp/foo\".
+
+Options:
+    -h                   Print help
+    -t TYPE              Specify server type. Current valid ones are \"ramses\",\"osc\",
+                         and \"hpcmp\". \"ramses\" is default.
+    -n RAMSESNODE        Run only on the node RAMSESNODE. Usually, the generating
+                         pbs script will run on a node specified in the <pmovie-dir>
+                         argument.
+    -s SCRIPT            Select a scan script by setting in the path. Please,
+                         let it be accessible to python when running this script.
+
+For many more options, see this script with environment variables.
+"
+NODES=1
+SYSTYPE="ramses"
+RDDIR=${RDDIR:-"/home/ngirmang.1/lspreader"}
+CONDA=${CONDA:-"/home/ngirmang.1/conda"}
+RAMSESNODE=
+MYSCANSCRIPT=Escan.py
+while getopts ':hs:t:N:c:U' opt; do
+      case $opt in
+          h)
+              echo "$USAGE"
+              exit 0
+              ;;
+          n)
+              RAMSESNODE=$OPTARG
+              ;;
+          t)
+              SYSTYPE=$OPTARG
+              ;;
+          s)
+              case $OPTARG in
+                  Escan.py)
+                      MYSCANSCRIPT=Escan.py
+                      ;;
+                  Escan-with-region.py)
+                      MYSCANSCRIPT=Escan-with-region.py
+                      ;;
+                  *)
+                      MYSCANSCRIPT=
+                      SCANNER=$OPTARG
+                      ;;
+              esac
+              ;;
+          \?)
+              echo "Invalid option: $OPTARG">&2
+              exit 1
+              ;;
+          :)
+              echo "Option -$OPTARG requires an argument.">&2
+              exit 1
+              ;;
+      esac
+done
+shift "$((OPTIND-1))"
+
+[-e $CONDA ] && source $CONDA
+[ ! -n "$1" ] && echo $USAGE && exit 1;
+if [ ! -n "$MYSCANSCRIPT" ]; then
+    SCANNER=$RDDIR/scan/$MYSCANSCRIPT
+fi
+
+PMOVDIR="$1"
+LOGFILE=$PMOVDIR/pmov2traj.log;
+export PATH="$RDDIR/pmovie/:$PATH"
+if [ -n "$(echo  $PMOVDIR | grep \: )" ] && [ "$SYSTYPE" == "ramses" ]; then
+    RAMSESNODE=${RAMSESNODE:-"$(echo $PMOVDIR | sed 's/@\{0,1\}\([A-Z,a-z,0-9]\+\):.*/\1/')"}
+    DEST=$(echo $PMOVDIR | sed s/"^.*:"//)
+    rsh $RAMSESNODE "export RDDIR=$RDDIR && export $CONDA && export PATH=$PATH && \
+        pmov2traj $DEST"
+fi
+if [ ! -n "$NPROCS" ]; then
+    case $SYSTYPE in
+        "ramses")
+            export NPROCS=30;;
+        "hpcmp")
+            export NPROCS=20;;
+        "osc")
+            export NPROCS=8;;
+    esac
+fi
+#executing
+export PMOVDIR=$DEST
+firsthash >> $LOGFILE
+scanp4    >> $LOGFILE
+search    >> $LOGFILE

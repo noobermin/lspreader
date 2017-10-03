@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+PMOVDIR=${PMOVDIR:-.}
+OUTDIR=${OUTDIR:-$PMOVDIR/pmovie-scan}
+mkdir -p $OUTDIR
+
+NPROCS=${NPROCS:-2}
+SLEEPTIME=${SLEEPTIME:-5}
+HASHFILE=$OUTDIR/hash.d
+
+#now, we search
+echo "searching pmovies for hashes at $(date)"
+for i in $(ls $PMOVDIR/pmovie*.p4*); do
+    while [ $(pgrep -f searchp4.py |  wc -l ) -ge $NPROCS ]; do sleep $SLEEPTIME; done;
+    echo "search: searching $i"
+    sleep 0.2;
+    ./searchp4.py -D $OUTDIR $i $OUTDIR/selected.npy &
+done
+while [ $(pgrep -f searchp4.py | wc -l) -gt 0 ]; do
+    echo "waiting for $(pgrep -f search.py | wc -l) process(es)"
+    sleep $SLEEPTIME;
+done
+echo "gathering for trajectories $(date)"
+
+traj.py $OUTDIR/trajectories $(ls $OUTDIR/*.npz | sort -V)
+rm  traj*.npz selected.npy
+echo "done at $(date)">>$LOGFILE
+if [ -e $OUTDIR/trajectories.npz ]; then
+    echo "file is available at $HOSTNAME:$PWD/trajectories.npz"
+else
+    echo "trajectories is not found, check the log for errors."
+fi;
+
+

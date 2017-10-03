@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+PMOVDIR=${PMOVDIR:-.}
+OUTDIR=${OUTDIR:-$PMOVDIR/pmovie-scan}
+mkdir -p $OUTDIR
+
+NPROCS=${NPROCS:-2}
+SLEEPTIME=${SLEEPTIME:-5}
+HASHFILE=$OUTDIR/hash.d
+
+echo "starting scanning at $(date)"
+for i in $(ls $PMOVDIR/pmovie*.p4*); do
+    while [ $(pgrep -f scanp4.py  |  wc -l ) -ge $NPROCS ]; do sleep $SLEEPTIME; done; 
+    echo "scanp4: running $i"
+    OUTNAME="$(basename $i).found"
+    sleep 0.2;
+    scanp4.py --modulepath=$SCANNER $i $OUTDIR/$HASHFILE $OUTDIR/$OUTNAME &
+done
+while [ $(pgrep -f scanp4.py | wc -l) -gt 0 ]; do
+    echo "waiting for $(pgrep -f scanp4.py | wc -l) process(es)"
+    sleep $SLEEPTIME;
+done
+
+echo "gathering searches at $(date)"
+gather.py -i $OUTDIR/orig.npy selected.npy $(ls $PMOVDIR/* | grep '.found.*.npy$')
+rm -v $OUTDIR/*found*.npy

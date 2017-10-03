@@ -3,18 +3,18 @@
 Make found timesteps into trajectories.
 
 Usage:
-    ./traj.py [options] <inputregex> <output>
+    ./traj.py [options] <output> <input>...
 
 Options:
-    --help -h                 Print this help.
+    --help -h       Print this help.
+    --sort -s       Sort by time.
 '''
 from docopt import docopt;
-opts=docopt(__doc__,help=True);
-import subprocess;
-from gather import lsgrep;
 import numpy as np;
+opts=docopt(__doc__,help=True);
 
-files = lsgrep(opts['<inputregex>']);
+
+files = opts['<input>']
 def load(file):
     with np.load(file) as f:
         d,t=f['data'],f['time'][()]
@@ -22,7 +22,8 @@ def load(file):
 arrays = [load(file) for file in files];
 data = np.array([arr[0] for arr in arrays]);
 time = np.array([arr[1] for arr in arrays]);
-s=np.argsort(time);
-data=data[s];
-time=time[s];
+if opts['--sort']:
+    s=np.argsort(time);
+    data=data[s];
+    time=time[s];
 np.savez(opts['<output>'],data=data,time=time);

@@ -3,7 +3,7 @@
 Search a p4 for the given indices.
 
 Usage:
-    ./searchp4.py [options] <input> <indexfile>
+    ./searchp4.py [options] <input> <hashd> <indexfile>
 
 Options:
     --help -h                    Print this help.
@@ -13,24 +13,22 @@ Options:
 '''
 from docopt import docopt;
 opts=docopt(__doc__,help=True);
-from lspreader.misc import readfile;
+from pys import load_pickle;
 from lspreader.pmovie import read_and_hash;
 import numpy as np;
-from time import time;
-opts = docopt(__doc__,help=True);
 
 indices = np.load(opts['<indexfile>']);
-hashd = readfile(opts['--hash'],dumpfull=True);
+hashd = load_pickle(opts['--hash']);
 #reading in using the reader.
 frames = read_and_hash(opts['<input>'], hashd,
                        removedups=True,
-                       gzip=opts['--gzip']);
+                       gzip='guess');
 for frame in frames:
     data = frame['data'];
     found = np.in1d(data['hash'],indices);
-    data  = data[found];#destructive
+    data  = data[found];
     data.sort(order='hash');
-    out     = np.empty(indices.shape, dtype=data.dtype);
+    out   = np.empty(indices.shape, dtype=data.dtype);
     out[:]      = np.nan
     out['hash'] = -1;
     outbools= np.in1d(indices, data['hash']);
