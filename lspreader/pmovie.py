@@ -36,8 +36,13 @@ def firsthash(frame, removedupes=False):
         if np.isnan(ret):
             return 1.0;
         return ret;
+    def hasextent(l,eps=1e-10):
+        #will I one day make pic sims on the pm scale??
+        dim = frame['data'][l];
+        return np.abs(dim.max()-dim.min()) > eps;
     fields = list(frame['data'].dtype.names);
-    dims = [i for i in ['xi','yi','zi'] if i in fields];
+    dims = [ i for i in ['xi','yi','zi']
+             if i in fields and hasextent(i) ];
     ip = np.array([ frame['data'][l]
                     for l in dims ]).T;
     avgdiffs = np.array([avgdiff(a) for a in ip.T]);
