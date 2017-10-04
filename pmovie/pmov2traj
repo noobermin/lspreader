@@ -89,17 +89,12 @@ if [ ! -n "$NPROCS" ]; then
             export NPROCS=8;;
     esac
 fi
+fail(){
+    [ -n "$1" ] && echo "failed in $1, check $LOGFILE"
+    exit -1;
+}
 #executing
 >$LOGFILE
-if ! firsthash >> $LOGFILE 2>&1; then
-    echo "failed at firsthash"
-    exit -1
-fi
-if ! scanp4    >> $LOGFILE 2>&1; then
-    echo "failed during scanp4"
-    exit -1
-fi
-if ! search    >> $LOGFILE 2>&1; then
-    echo "failed during search"
-    exit -1
-fi
+firsthash >> $LOGFILE 2>&1 || fail "firsthash"
+scanp4    >> $LOGFILE 2>&1 || fail "scanp4"
+search    >> $LOGFILE 2>&1 || fail "search"
