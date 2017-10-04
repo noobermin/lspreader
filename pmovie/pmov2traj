@@ -91,9 +91,6 @@ if [ ! -n "$NPROCS" ]; then
 fi
 #executing
 export PMOVDIR=$DEST
-firsthash >> $LOGFILE 2>&1
-[ ! $? ] || echo "failed at firsthash" && exit -1
-scanp4    >> $LOGFILE 2>&1
-[ ! $? ] || echo "failed during scanp4" && exit -1
-search    >> $LOGFILE 2>&1
-[ ! $? ] || echo "failed during search" && exit -1
+firsthash >> $LOGFILE 2>&1  || echo "failed at firsthash"  && exit -1
+scanp4    >> $LOGFILE 2>&1  || echo "failed during scanp4" && exit -1
+search    >> $LOGFILE 2>&1  || echo "failed during search" && exit -1
