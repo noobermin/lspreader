@@ -6,7 +6,7 @@ mkdir -p $OUTDIR
 NPROCS=${NPROCS:-2}
 SLEEPTIME=${SLEEPTIME:-5}
 HASHFILE=$OUTDIR/hash.d
-
+SCANNER=${SCANNER:-"./scanner.py"}
 echo "starting scanning at $(date)"
 for i in $(ls $PMOVDIR/pmovie*.p4*); do
     while [ $(pgrep -f scanp4.py  |  wc -l ) -ge $NPROCS ]; do sleep $SLEEPTIME; done; 
