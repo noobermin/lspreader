@@ -23,12 +23,10 @@ done
 echo "gathering for trajectories $(date)"
 
 traj.py $OUTDIR/trajectories $(ls $OUTDIR/*.npz | sort -V)
-rm -v $OUTDIR/traj*.npz selected.npy
+rm -v $(ls $OUTDIR/*.npz | grep '[0-9]\+.npz\$')
 echo "done at $(date)"
 if [ -e $OUTDIR/trajectories.npz ]; then
     echo "file is available at $HOSTNAME:$PWD/trajectories.npz"
 else
     echo "trajectories is not found, check the log for errors."
 fi;
-
-
