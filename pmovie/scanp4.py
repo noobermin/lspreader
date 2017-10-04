@@ -23,8 +23,6 @@ if __name__ == "__main__":
     from docopt import docopt;
     opts=docopt(__doc__,help=True);
     fname = opts['--modulepath'];
-    print(">>>{}".format(fname));
-    quit(-1);
     m=re.search(r'(^.*)/(\w+)\.py$', fname);
     if not m:
         raise ValueError("module should be well named!");
