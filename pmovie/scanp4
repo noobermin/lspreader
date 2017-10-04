@@ -21,5 +21,6 @@ while [ $(pgrep -f scanp4.py | wc -l) -gt 0 ]; do
 done
 
 echo "gathering searches at $(date)"
-gather.py -i $OUTDIR/orig.npy selected.npy $(ls $PMOVDIR/* | grep '.found.*.npy$')
+echo gather.py -i $OUTDIR/orig.npy selected.npy $(ls $PMOVDIR/* | grep '.found.*.npy$')
+exit -1;
 rm -v $OUTDIR/*found*.npy
