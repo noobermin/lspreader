@@ -5,5 +5,5 @@ mkdir -p $OUTDIR
 
 HASHFILE=${HASHFILE:-$OUTDIR/hash.d}
 FIRSTPMOV=$(ls $PMOVDIR/pmovie*.p4* | sort -V | head -n 1)
-firsthash.py $FIRSTPMOV $OUTDIR/$HASHFILE $OUTDIR/orig.npy
+firsthash.py $FIRSTPMOV $HASHFILE $OUTDIR/orig.npy
 

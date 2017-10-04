@@ -5,7 +5,6 @@ mkdir -p $OUTDIR
 
 NPROCS=${NPROCS:-2}
 SLEEPTIME=${SLEEPTIME:-5}
-HASHFILE=$OUTDIR/hash.d
 
 #now, we search
 echo "searching pmovies for hashes at $(date)"

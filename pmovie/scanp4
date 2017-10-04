@@ -13,7 +13,7 @@ for i in $(ls $PMOVDIR/pmovie*.p4*); do
     echo "scanp4: running $i"
     OUTNAME="$(basename $i).found"
     sleep 0.2;
-    scanp4.py --modulepath=$SCANNER $i $OUTDIR/$HASHFILE $OUTDIR/$OUTNAME &
+    scanp4.py --modulepath=$SCANNER $i $HASHFILE $OUTDIR/$OUTNAME &
 done
 while [ $(pgrep -f scanp4.py | wc -l) -gt 0 ]; do
     echo "waiting for $(pgrep -f scanp4.py | wc -l) process(es)"
