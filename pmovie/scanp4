@@ -6,6 +6,8 @@ mkdir -p $OUTDIR
 NPROCS=${NPROCS:-2}
 SLEEPTIME=${SLEEPTIME:-5}
 HASHFILE=$OUTDIR/hash.d
+SELECTED=${SELECTED:-$OUTDIR/selected.npy}
+
 SCANNER=${SCANNER:-"./scanner.py"}
 echo "starting scanning at $(date)"
 for i in $(ls $PMOVDIR/pmovie*.p4*); do
@@ -21,5 +23,5 @@ while [ $(pgrep -f scanp4.py | wc -l) -gt 0 ]; do
 done
 
 echo "gathering searches at $(date)"
-gather.py -i $OUTDIR/orig.npy selected.npy $OUTDIR/*found.npy
+gather.py -i $OUTDIR/orig.npy $SELECTED $OUTDIR/*found.npy
 rm -v $OUTDIR/*found*.npy

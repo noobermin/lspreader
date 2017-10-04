@@ -5,6 +5,8 @@ mkdir -p $OUTDIR
 
 NPROCS=${NPROCS:-2}
 SLEEPTIME=${SLEEPTIME:-5}
+HASHFILE=${HASHFILE:-$OUTDIR/hash.d}
+SELECTED=${SELECTED:-$OUTDIR/selected.npy}
 
 #now, we search
 echo "searching pmovies for hashes at $(date)"
@@ -12,7 +14,7 @@ for i in $(ls $PMOVDIR/pmovie*.p4*); do
     while [ $(pgrep -f searchp4.py |  wc -l ) -ge $NPROCS ]; do sleep $SLEEPTIME; done;
     echo "search: searching $i"
     sleep 0.2;
-    searchp4.py -D $OUTDIR $i $OUTDIR/selected.npy &
+    searchp4.py -D $OUTDIR $i $HASHFILE $SELECTED &
 done
 while [ $(pgrep -f searchp4.py | wc -l) -gt 0 ]; do
     echo "waiting for $(pgrep -f search.py | wc -l) process(es)"

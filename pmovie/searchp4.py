@@ -7,7 +7,6 @@ Usage:
 
 Options:
     --help -h                    Print this help.
-    --hash=HASHFILE -H HASHFILE  Read this hash file. [default: hash.d]
     --gzip -Z                    Read gzipped files.
     --dir=D -D D                 Output to this directory.
 '''
