@@ -18,7 +18,7 @@ from pys import dump_pickle;
 fs=read(opts['<input>'], gzip='guess');
 frame1 = fs[0];
 hashd  = firsthash(frame1, removedupes=True);
-frame1 = addhash(frame1, hd, removedupes=True);
+frame1 = addhash(frame1, hashd, removedupes=True);
 hashes = frame1['data']['hash']
 hashes = hashes[hashes != -1];
 np.save(opts['<hashesout>'], hashes);
