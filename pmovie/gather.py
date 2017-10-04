@@ -21,4 +21,4 @@ if __name__ == "__main__":
     if opts['--intersect']:
         intersect = np.load(opts['--intersect']);
         good.intersection_update(good);
-    np.save(opts['<output>'],list(good));
+    np.save(opts['<output>'],np.array(list(good)));
