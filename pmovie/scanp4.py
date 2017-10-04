@@ -34,7 +34,7 @@ if __name__ == "__main__":
     finally:
         if fp:
             fp.close();
-    hashd = load_pickle(opts['hashd']);
+    hashd = load_pickle(opts['<hashd>']);
     np.save(
         opts['<output>'],
         filter_hashes_from_file(opts['<input>'],hashd,
