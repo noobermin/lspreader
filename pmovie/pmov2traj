@@ -90,6 +90,7 @@ if [ ! -n "$NPROCS" ]; then
     esac
 fi
 #executing
+>$LOGFILE
 if ! firsthash >> $LOGFILE 2>&1; then
     echo "failed at firsthash"
     exit -1
