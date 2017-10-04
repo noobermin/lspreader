@@ -70,7 +70,7 @@ if [ -n "$MYSCANSCRIPT" ]; then
     export SCANNER=$RDDIR/scan/$MYSCANSCRIPT
 fi
 
-PMOVDIR="$1"
+export PMOVDIR="$1"
 LOGFILE=$PMOVDIR/pmov2traj.log;
 export PATH="$RDDIR/pmovie/:$PATH"
 if [ -n "$(echo  $PMOVDIR | grep \: )" ] && [ "$SYSTYPE" == "ramses" ]; then
@@ -90,7 +90,6 @@ if [ ! -n "$NPROCS" ]; then
     esac
 fi
 #executing
-export PMOVDIR=$DEST
 if ! firsthash >> $LOGFILE 2>&1; then
     echo "failed at firsthash"
     exit -1
