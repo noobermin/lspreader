@@ -65,7 +65,7 @@ done
 shift "$((OPTIND-1))"
 
 [ -e $CONDA ] && source $CONDA
-[ ! -n "$1" ] && echo $USAGE && exit 1;
+[ ! -n "$1" ] && echo "$USAGE" && exit 1;
 if [ ! -n "$MYSCANSCRIPT" ]; then
     SCANNER=$RDDIR/scan/$MYSCANSCRIPT
 fi
