@@ -56,6 +56,7 @@ while getopts ':hs:t:n:N' opt; do
               ;;
           N)
               NEWTRAJNPZ=1
+              ;;
           \?)
               echo "Invalid option: $OPTARG">&2
               exit 1
