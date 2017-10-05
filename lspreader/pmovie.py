@@ -107,7 +107,7 @@ def genhash(frame,d=None,
         if not dims: dims=['xi','yi','zi'];
         hashes = np.array(
             [hash(tuple((p[l] for l in dims)))
-             for p in frame])
+             for p in frame['data']])
     if removedupes:
         #marking duplicated particles
         if not dupes:
