@@ -13,7 +13,7 @@ from docopt import docopt;
 opts=docopt(__doc__,help=True);
 import numpy as np;
 from lspreader import read;
-from lspreader.pmovie import firsthash,addhash;
+from lspreader.pmovie import firsthash_new,addhash;
 from pys import dump_pickle;
 fs=read(opts['<input>'], gzip='guess');
 frame1 = fs[0];
