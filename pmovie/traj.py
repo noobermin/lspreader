@@ -8,14 +8,12 @@ Usage:
 Options:
     --help -h       Print this help.
     --sort -s       Sort by time.
-    --new  -n       New npz format, in which
-                    each particle has its own
-                    file.
+    --new -n        New npz format, in which each particle has its own file.
 '''
 from docopt import docopt;
 import numpy as np;
 opts=docopt(__doc__,help=True);
-
+print(opts);
 
 files = opts['<input>']
 def load(file):
