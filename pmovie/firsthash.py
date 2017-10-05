@@ -19,6 +19,7 @@ fs=read(opts['<input>'], gzip='guess');
 frame1 = fs[0];
 frame1, hashd  = firsthash_new(frame1);
 frame1 = addhash(frame1, new=True, removedupes=True);
+hashd['gzip']='guess' #hack
 hashes = frame1['data']['hash']
 hashes = hashes[hashes != -1];
 hashes.sort();
