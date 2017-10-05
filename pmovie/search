@@ -22,7 +22,7 @@ while [ $(pgrep -f searchp4.py | wc -l) -gt 0 ]; do
 done
 echo "gathering for trajectories $(date)"
 
-traj.py $OUTDIR/trajectories $(ls $OUTDIR/*.npz | sort -V)
+traj.py $OUTDIR/trajectories.npz $(ls $OUTDIR/*.npz | grep '[0-9]\+\.npz' | sort -V)
 rm -v $( ls $OUTDIR/*.npz | grep '[0-9]\+\.npz' )
 echo "done at $(date)"
 if [ -e $OUTDIR/trajectories.npz ]; then
