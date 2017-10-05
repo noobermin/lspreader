@@ -117,9 +117,9 @@ def genhash(frame,**kw):
         scaled = ((ip - d['mins'])/d['avgdiffs']).round().astype('int64');
         hashes = (scaled*d['pw']).sum(axis=1);
     else:
-        hashes = np.array(
-            [struct.pack('{}{}'.format(len(dims), hash(tuple((p[l] for l in dims)))
-             for p in frame['data']])
+        hashes = np.array([
+            struct.pack('{}{}'.format(len(dims),getkw('ftype')), *[p[l] for l in dims])
+            for p in frame['data']]);
     if getkw('removedupes'):
         #marking duplicated particles
         if not dupes:
