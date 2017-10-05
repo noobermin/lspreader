@@ -17,6 +17,9 @@ Options:
                          argument.
     -s SCRIPT            Select a scan script by setting in the path. Please,
                          let it be accessible to python when running this script.
+    -c CONDAFILE         Set a file to source in order to have access to python.
+    -l RDDIR             Set the path to lspreader. You pretty much want this to be
+                         set if it isn't set by environment variable.
     -N                   Use the new trajectory file format for quicker(?) access.
 
 For many more options, see this script with environment variables.
@@ -24,22 +27,18 @@ For many more options, see this script with environment variables.
 NODES=1
 SYSTYPE="ramses"
 RDDIR=${RDDIR:-"/home/ngirmang.1/lspreader"}
-CONDA=${CONDA:-"/home/ngirmang.1/conda"}
+CONDAFILE=${CONDAFILE:-"/home/ngirmang.1/conda"}
 RAMSESNODE=
 MYSCANSCRIPT=Escan.py
 NEWTRAJNPZ=
-while getopts ':hs:t:n:N' opt; do
+while getopts ':hs:t:n:c:l:N' opt; do
       case $opt in
           h)
               echo "$USAGE"
               exit 0
               ;;
-          n)
-              RAMSESNODE=$OPTARG
-              ;;
-          t)
-              SYSTYPE=$OPTARG
-              ;;
+          n)  RAMSESNODE=$OPTARG;;
+          t)  SYSTYPE=$OPTARG;;
           s)
               case $OPTARG in
                   Escan.py)
@@ -54,9 +53,9 @@ while getopts ':hs:t:n:N' opt; do
                       ;;
               esac
               ;;
-          N)
-              NEWTRAJNPZ=1
-              ;;
+          l)  RDDIR=$OPTARG;;
+          c)  CONDAFILE=$OPTARG;;
+          N)  NEWTRAJNPZ=1;;
           \?)
               echo "Invalid option: $OPTARG">&2
               exit 1
@@ -68,7 +67,7 @@ while getopts ':hs:t:n:N' opt; do
       esac
 done
 shift "$((OPTIND-1))"
-[ -e $CONDA ] && source $CONDA
+[ -e $CONDAFILE ] && source $CONDAFILE
 [ ! -n "$1" ] && echo "$USAGE" && exit 1;
 if [ -n "$MYSCANSCRIPT" ]; then
     export SCANNER=$RDDIR/scan/$MYSCANSCRIPT
