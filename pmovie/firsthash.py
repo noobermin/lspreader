@@ -14,10 +14,11 @@ opts=docopt(__doc__,help=True);
 import numpy as np;
 from lspreader import read;
 from lspreader.pmovie import firsthash,addhash;
+#firsthash = firsthash_new;;
 from pys import dump_pickle;
 fs=read(opts['<input>'], gzip='guess');
 frame1 = fs[0];
-frame1, hashd  = firsthash_new(frame1);
+frame1, hashd  = firsthash(frame1);
 frame1 = addhash(frame1, new=True, removedupes=True);
 hashd['gzip']='guess' #hack
 hashes = frame1['data']['hash']
