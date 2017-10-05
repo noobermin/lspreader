@@ -12,6 +12,6 @@ setup(name='lspreader',
           'numpy>=1.10.1',
           'scipy>=0.16.0',
           'h5py>=2.5.0',
-          'pys>=0.0.4',
+          'pys>=0.0.9',
       ],
       zip_safe=False)

@@ -98,7 +98,7 @@ def genhash(frame,**kw):
       
     Returns an array of the shape of the frames with hashes.
     '''
-    getkw = mk_getkw(kw,genhash_defaults,prefer_pased=True);
+    getkw = mk_getkw(kw,genhash_defaults,prefer_passed=True);
     dims = getkw('dims');
     dupes= getkw('dupes');
     if getkw('d') is not None:
