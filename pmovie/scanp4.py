@@ -35,6 +35,7 @@ if __name__ == "__main__":
         if fp:
             fp.close();
     hashd = load_pickle(opts['<hashd>']);
+    hashd['gzip'] = 'guess';
     np.save(
         opts['<output>'],
         filter_hashes_from_file(opts['<input>'], f, **hashd));
