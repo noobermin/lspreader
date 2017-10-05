@@ -13,7 +13,6 @@ Options:
 from docopt import docopt;
 import numpy as np;
 opts=docopt(__doc__,help=True);
-print(opts);
 
 files = opts['<input>']
 def load(file):
@@ -31,6 +30,8 @@ if not opts['--new']:
     np.savez(opts['<output>'],data=data,time=time);
 else:
     ps = data.shape[1];
-    out={ i:data[:,i] for i in xrange(ps) }
+    sz=len('{}'.format(ps));
+    fmt = '{{:0{}}}'.format(sz);
+    out={fmt.format(i) : data[:,i] for i in xrange(ps) };
     out['time'] = time;
     np.savez(opts['<output>'],**out);
