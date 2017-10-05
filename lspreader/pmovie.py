@@ -56,13 +56,14 @@ def firsthash(frame, removedupes=False):
     pw = 10**np.array(pw);
     #the dictionary used for hashing
     d=dict(dims=dims, mins=mins, avgdiffs=avgdiffs, pw=pw);
+    hashes = genhash(frame,removedupes=False,**d);
     if removedupes:
-        hashes = genhash(frame,d,removedupes=False);
         #consider if the negation of this is faster for genhash
         uni,counts = np.unique(hashes,return_counts=True);
         d['dupes']=uni[counts>1]
         dupei = np.in1d(hashes, d['dupes']);
         hashes[dupei] = -1;
+        d['removedupes']=True;
     return hashes,d
 
 def firsthash_new(frame,**kw):
@@ -70,8 +71,8 @@ def firsthash_new(frame,**kw):
     kw['dupes']=None;
     hashes = genhash(frame,**kw);
     uni,counts = np.unique(hashes,return_counts=True);
-    retd=sd(kw,dupes=uni[counts>1],removedupes=True);
-    dupei = np.in1d(hashes, retd['dupes'])
+    d=sd(kw,dupes=uni[counts>1],removedupes=True);
+    dupei = np.in1d(hashes, d['dupes'])
     hashes[dupei] = -1
     return hashes, retd;
 
@@ -101,31 +102,30 @@ def genhash(frame,**kw):
       dupes     : array of hashes known to be dupes.
       ftype     : type of floats. defaults to 'f'.
 
+    -- old keywords from old hashing --
+      mins      : minima of each axis
+      avgdifs   : average differences
+      pw        : powers of each axis
+
     Returns an array of the shape of the frames with hashes.
     '''
     getkw = mk_getkw(kw,genhash_defaults,prefer_passed=True);
     dims = getkw('dims');
     dupes= getkw('dupes');
-    if getkw('d') is not None:
-        d = getkw('d');
-        dims  = d['dims'];
-        dupes = d['dupes'];
     if not getkw('new'):
-        if d is None:
-            raise ValueError("Old hashing requires hash spec");
         ip = np.array([frame['data'][l] for l in dims]).T;
-        scaled = ((ip - d['mins'])/d['avgdiffs']).round().astype('int64');
-        hashes = (scaled*d['pw']).sum(axis=1);
+        scaled = ((ip - getkw('mins'))/getkw('avgdiffs')).round().astype('int64');
+        hashes = (scaled*getkw('pw')).sum(axis=1);
     else:
         hashes = np.array([
             struct.pack('{}{}'.format(len(dims),getkw('ftype')), *[p[l] for l in dims])
             for p in frame['data']]);
     if getkw('removedupes'):
         #marking duplicated particles
-        if not dupes:
+        if not getkw('dupes'):
             hashes =  np.unique(hashes);
         else:
-            dupei = np.in1d(hashes, dupes)
+            dupei = np.in1d(hashes, getkw('dupes'));
             hashes[dupei] = -1
     return hashes;
 

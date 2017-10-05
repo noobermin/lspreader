@@ -20,9 +20,6 @@ indices = np.load(opts['<indexfile>']);
 hashd = load_pickle(opts['<hashd>']);
 #reading in using the reader.
 frames = read_and_hash(opts['<input>'], **hashd);
-#frames = read_and_hash(opts['<input>'], hashd,
-#                       removedups=True,
-#                       gzip='guess');
 for frame in frames:
     data = frame['data'];
     found = np.in1d(data['hash'],indices);
