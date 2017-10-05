@@ -5,7 +5,7 @@ pmovie reading functions
 import numpy as np;
 import numpy.lib.recfunctions as rfn;
 from lspreader import read;
-from pys import sd;
+from pys import sd, mk_getkw;
 #
 # this is mainly hashing
 #
@@ -72,11 +72,14 @@ def firsthash_new(frame,**kw):
     hashes[dupei] = -1
     return frame, retd;
 
-def genhash(frame,d=None,
-            new=False,
-            dupes=None,
-            removedupes=False,
-            dims=None):
+genhash_defaults = dict(
+    d=None,
+    new=False,
+    dupes=None,
+    removedupes=False,
+    dims=('xi','yi','zi')
+);
+def genhash(frame,**kw):
     '''
     Generate the hashes for the given frame for a specification
     given in the dictionary d returned from firsthash.
@@ -88,27 +91,29 @@ def genhash(frame,d=None,
     Keywords:
     ---------
       d         : hash specification generated from firsthash.
-      removedups: put -1 in duplicates
-      dims      : specify dims. Supercedes the setting in d.
       new       : use new hashing.
+      removedups: put -1 in duplicates,
+      dims      : specify dims. Supercedes the setting in `d'.
+      dupes     : array of hashes known to be dupes.
       
     Returns an array of the shape of the frames with hashes.
     '''
-    if d is not None:
-        if dims is None: dims = d['dims'];
+    getkw = mk_getkw(kw,genhash_defaults,prefer_pased=True);
+    dims = getkw('dims');
+    dupes= getkw('dupes');
+    if getkw('d') is not None:
+        d = getkw('d');
+        dims  = d['dims'];
         dupes = d['dupes'];
     if not new:
-        if d is None:
-            raise ValueError("old hashing requires hash spec");
         ip = np.array([frame['data'][l] for l in dims]).T;
         scaled = ((ip - d['mins'])/d['avgdiffs']).round().astype('i8');
         hashes = (scaled*d['pw']).sum(axis=1);
     else:
-        if not dims: dims=['xi','yi','zi'];
         hashes = np.array(
             [hash(tuple((p[l] for l in dims)))
              for p in frame['data']])
-    if removedupes:
+    if getkw('removedupes'):
         #marking duplicated particles
         if not dupes:
             hashes =  np.unique(hashes);
@@ -116,7 +121,6 @@ def genhash(frame,d=None,
             dupei = np.in1d(hashes, dupes)
             hashes[dupei] = -1
     return hashes;
-
 
 def addhash(frame,**kw):
     '''
