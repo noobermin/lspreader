@@ -13,12 +13,12 @@ from docopt import docopt;
 import re;
 import numpy as np;
 
-if __name__ == "__main__":
-    opts=docopt(__doc__,help=True);
-    good = set();
-    for fname in opts['<input>']:
-        good.update(np.load(fname));
-    if opts['--intersect']:
-        intersect = np.load(opts['--intersect']);
-        good.intersection_update(good);
-    np.save(opts['<output>'],np.array(list(good)));
+
+opts=docopt(__doc__,help=True);
+good = set();
+for fname in opts['<input>']:
+    good.update(np.load(fname));
+if opts['--intersect']:
+    intersect = np.load(opts['--intersect']);
+    good.intersection_update(good);
+np.save(opts['<output>'],np.array(list(good)));

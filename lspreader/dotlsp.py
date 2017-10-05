@@ -5,6 +5,24 @@ import re;
 import numpy as np;
 getrx = lambda rx:float(re.search(rx,lines,flags=re.MULTILINE).group(1));
 
+# def getextent(lsp):
+#     '''
+#     Obtain spatial limits of a .lsp file. Might only work with simply gridded
+#     simulations.
+#     '''
+#     #get the grid section.
+#     lines = lsp.split("\n");
+#     gridstart=-1;
+#     gridend=-1;
+#     for i,line in enumerate(lines):
+#         if gridstart >= 0:
+#             if re.match("^ *\[ *Grid *\]", line):
+#                 gridstart = i;
+#         else:
+#             if re.match("^ *\[ *[A-Z,a-z]+ *\]", line):
+#                 gridend = i
+#                 break;
+
 def getdim(lsp):
     '''
     Obtain the dimensionality of a .lsp file. This should work for all well

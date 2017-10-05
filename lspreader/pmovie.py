@@ -5,7 +5,7 @@ pmovie reading functions
 import numpy as np;
 import numpy.lib.recfunctions as rfn;
 from lspreader import read;
-
+from pys import sd;
 #
 # this is mainly hashing
 #
@@ -62,7 +62,17 @@ def firsthash(frame, removedupes=False):
         d.update({'dupes': uni[counts>1]})
     return d;
 
-def genhash(frame,d,removedupes=False):
+def firsthash_new(frame,**kw):
+    kw['new']=True;
+    hashes = genhash(frame);
+    uni,counts = np.unique(hashes,return_counts=True);
+    retd=sd(kw,dupes=uni[counts>1],removedupes=True);
+    dupei = np.in1d(hashes, retd['dupes'])
+    hashes[dupei] = -1
+    return frame, retd;
+  
+
+def genhash(frame,d=None,new=False,removedupes=False,dims=None):
     '''
     Generate the hashes for the given frame for a specification
     given in the dictionary d returned from firsthash.
@@ -70,24 +80,42 @@ def genhash(frame,d,removedupes=False):
     Parameters:
     -----------
       frame :  frame to hash.
-      d     :  hash specification generated from firsthash.
 
     Keywords:
     ---------
+      d         : hash specification generated from firsthash.
       removedups: put -1 in duplicates
-    
+      dims      : specify dims. Supercedes the setting in d.
+      new       : use new hashing.
+      
     Returns an array of the shape of the frames with hashes.
     '''
-    ip = np.array([frame['data'][l] for l in d['dims']]).T;
-    scaled = ((ip - d['mins'])/d['avgdiffs']).round().astype('i8');
-    hashes = (scaled*d['pw']).sum(axis=1);
-    #marking duplicated particles
+    dupes = None;
+    if d is not None:
+        if dims is None: dims = d['dims'];
+        dupes = d['dupes'];
+    if not new:
+        if d is None:
+            raise ValueError("old hashing requires hash spec");
+        ip = np.array([frame['data'][l] for l in dims]).T;
+        scaled = ((ip - d['mins'])/d['avgdiffs']).round().astype('i8');
+        hashes = (scaled*d['pw']).sum(axis=1);
+    else:
+        if not dims: dims=['xi','yi','zi'];
+        hashes = np.array(
+            [hash(tuple((p[l] for l in dims)))
+             for p in frame])
     if removedupes:
-        dups = np.in1d(hashes,d['dupes'])
-        hashes[dups] = -1
+        #marking duplicated particles
+        if not dupes:
+            hashes =  np.unique(hashes);
+        else:
+            dupei = np.in1d(hashes, dupes)
+            hashes[dupei] = -1
     return hashes;
 
-def addhash(frame,d,removedupes=False):
+
+def addhash(frame,**kw):
     '''
     helper function to add hashes to the given frame
     given in the dictionary d returned from firsthash.
@@ -95,16 +123,15 @@ def addhash(frame,d,removedupes=False):
     Parameters:
     -----------
       frame :  frame to hash.
-      d     :  hash specification generated from firsthash.
 
     Keywords:
     ---------
-      removedups: put -1 in duplicates
+      same as genhash
     
     Returns frame with added hashes, although it will be added in
     place.
     '''
-    hashes = genhash(frame,d,removedupes);
+    hashes = genhash(frame,**kw);
     frame['data'] = rfn.rec_append_fields(
         frame['data'],'hash',hashes);
     return frame;
@@ -119,19 +146,13 @@ def sortframe(frame):
     frame['data']=d;
     return frame;
 
-def read_and_hash(fname, hashd, **kw):
+def read_and_hash(fname, **kw):
     '''
-    Read and process with hash dict hashd.
+    Read and and addhash each frame.
     '''
-    if 'removedupes' in kw:
-        removedupes = kw['removedupes'];
-        del kw['removedupes'];
-    else:
-        removedupes = False;
-    return [addhash(frame, hashd, removedupes=removedupes)
-            for frame in read(fname, **kw)];
+    return [addhash(frame, **kw) for frame in read(fname, **kw)];
 
-def filter_hashes_from_file(fname, hashd, f, **kw):
+def filter_hashes_from_file(fname, f, **kw):
     '''
     Obtain good hashes from a .p4 file with the dict hashd and a
     function that returns good hashes. Any keywords will be
@@ -141,10 +162,9 @@ def filter_hashes_from_file(fname, hashd, f, **kw):
     -----------
 
     fname -- filename of file.
-    hashd -- hash dict.
     f     -- function that returns a list of good hashes.
     '''
     return np.concatenate([
         frame['data']['hash'][f(frame)]
-        for frame in read_and_hash(fname, hashd, **kw)
+        for frame in read_and_hash(fname, **kw)
     ]);

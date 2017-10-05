@@ -17,11 +17,10 @@ from lspreader.pmovie import firsthash,addhash;
 from pys import dump_pickle;
 fs=read(opts['<input>'], gzip='guess');
 frame1 = fs[0];
-hashd  = firsthash(frame1, removedupes=True);
-frame1 = addhash(frame1, hashd, removedupes=True);
+frame1, hashd  = firsthash_new(frame1);
+frame1 = addhash(frame1, new=True, removedupes=True);
 hashes = frame1['data']['hash']
 hashes = hashes[hashes != -1];
+hashes.sort();
 np.save(opts['<hashesout>'], hashes);
 dump_pickle(opts['<hashdout>'], hashd);
-
-
