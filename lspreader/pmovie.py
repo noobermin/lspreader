@@ -6,6 +6,7 @@ import numpy as np;
 import numpy.lib.recfunctions as rfn;
 from lspreader import read;
 from pys import sd, mk_getkw;
+import struct;
 #
 # this is mainly hashing
 #
@@ -13,7 +14,7 @@ from pys import sd, mk_getkw;
 def firsthash(frame, removedupes=False):
     '''
     Hashes the first time step. Only will work as long as
-    the hash can fit in a i8.
+    the hash can fit in a uint64.
 
     Parameters:
     -----------
@@ -47,8 +48,8 @@ def firsthash(frame, removedupes=False):
                     for l in dims ]).T;
     avgdiffs = np.array([avgdiff(a) for a in ip.T]);
     mins  = ip.min(axis=0);
-    ips = (((ip - mins)/avgdiffs).round().astype('i8'))
-    pws  = np.floor(np.log10(ips.max(axis=0))).astype('i8')+1
+    ips = (((ip - mins)/avgdiffs).round().astype('uint64'))
+    pws  = np.floor(np.log10(ips.max(axis=0))).astype('uint64')+1
     pws = list(pws);
     pw = [0]+[ ipw+jpw for ipw,jpw in
                zip([0]+pws[:-1],pws[:-1]) ];
@@ -59,8 +60,10 @@ def firsthash(frame, removedupes=False):
         hashes = genhash(frame,d,removedupes=False);
         #consider if the negation of this is faster for genhash
         uni,counts = np.unique(hashes,return_counts=True);
-        d.update({'dupes': uni[counts>1]})
-    return d;
+        d['dupes']=uni[counts>1]
+        dupei = np.in1d(hashes, d['dupes']);
+        hashes[dupei] = -1;
+    return hashes,d
 
 def firsthash_new(frame,**kw):
     kw['new']=True;
@@ -70,14 +73,15 @@ def firsthash_new(frame,**kw):
     retd=sd(kw,dupes=uni[counts>1],removedupes=True);
     dupei = np.in1d(hashes, retd['dupes'])
     hashes[dupei] = -1
-    return frame, retd;
+    return hashes, retd;
 
 genhash_defaults = dict(
     d=None,
     new=False,
     dupes=None,
     removedupes=False,
-    dims=('xi','yi','zi')
+    dims=('xi','yi','zi'),
+    ftype='f',
 );
 def genhash(frame,**kw):
     '''
@@ -91,11 +95,12 @@ def genhash(frame,**kw):
     Keywords:
     ---------
       d         : hash specification generated from firsthash.
-      new       : use new hashing.
+      new       : use new hashing, which isn't really hashing.
       removedups: put -1 in duplicates,
       dims      : specify dims. Supercedes the setting in `d'.
       dupes     : array of hashes known to be dupes.
-      
+      ftype     : type of floats. defaults to 'f'.
+
     Returns an array of the shape of the frames with hashes.
     '''
     getkw = mk_getkw(kw,genhash_defaults,prefer_passed=True);
@@ -109,11 +114,11 @@ def genhash(frame,**kw):
         if d is None:
             raise ValueError("Old hashing requires hash spec");
         ip = np.array([frame['data'][l] for l in dims]).T;
-        scaled = ((ip - d['mins'])/d['avgdiffs']).round().astype('i8');
+        scaled = ((ip - d['mins'])/d['avgdiffs']).round().astype('int64');
         hashes = (scaled*d['pw']).sum(axis=1);
     else:
         hashes = np.array(
-            [hash(tuple((p[l] for l in dims)))
+            [struct.pack('{}{}'.format(len(dims), hash(tuple((p[l] for l in dims)))
              for p in frame['data']])
     if getkw('removedupes'):
         #marking duplicated particles

@@ -63,7 +63,6 @@ while getopts ':hs:t:N:c:U' opt; do
       esac
 done
 shift "$((OPTIND-1))"
-echo $SCANNER
 [ -e $CONDA ] && source $CONDA
 [ ! -n "$1" ] && echo "$USAGE" && exit 1;
 if [ -n "$MYSCANSCRIPT" ]; then
