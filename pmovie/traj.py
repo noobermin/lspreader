@@ -8,6 +8,9 @@ Usage:
 Options:
     --help -h       Print this help.
     --sort -s       Sort by time.
+    --new  -n       New npz format, in which
+                    each particle has its own
+                    file.
 '''
 from docopt import docopt;
 import numpy as np;
@@ -26,4 +29,10 @@ if opts['--sort']:
     s=np.argsort(time);
     data=data[s];
     time=time[s];
-np.savez(opts['<output>'],data=data,time=time);
+if not opts['--new']:
+    np.savez(opts['<output>'],data=data,time=time);
+else:
+    ps = data.shape[1];
+    out={ i:data[:,i] for i in xrange(ps) }
+    out['time'] = time;
+    np.savez(opts['<output>'],**out);

@@ -17,6 +17,7 @@ Options:
                          argument.
     -s SCRIPT            Select a scan script by setting in the path. Please,
                          let it be accessible to python when running this script.
+    -N                   Use the new trajectory file format for quicker(?) access.
 
 For many more options, see this script with environment variables.
 "
@@ -26,7 +27,8 @@ RDDIR=${RDDIR:-"/home/ngirmang.1/lspreader"}
 CONDA=${CONDA:-"/home/ngirmang.1/conda"}
 RAMSESNODE=
 MYSCANSCRIPT=Escan.py
-while getopts ':hs:t:N:c:U' opt; do
+NEWTRAJNPZ=
+while getopts ':hs:t:n:N' opt; do
       case $opt in
           h)
               echo "$USAGE"
@@ -52,6 +54,8 @@ while getopts ':hs:t:N:c:U' opt; do
                       ;;
               esac
               ;;
+          N)
+              NEWTRAJNPZ=1
           \?)
               echo "Invalid option: $OPTARG">&2
               exit 1
@@ -92,6 +96,7 @@ fail(){
     [ -n "$1" ] && echo "failed in $1, check $LOGFILE"
     exit -1;
 }
+export NEWTRAJNPZ=$NEWTRAJNPZ
 #executing
 >$LOGFILE
 firsthash >> $LOGFILE 2>&1 || fail "firsthash"
