@@ -70,7 +70,7 @@ shift "$((OPTIND-1))"
 [ -e $CONDAFILE ] && source $CONDAFILE
 [ ! -n "$1" ] && echo "$USAGE" && exit 1;
 if [ -n "$MYSCANSCRIPT" ]; then
-    export SCANNER=$RDDIR/scan/$MYSCANSCRIPT
+    export SCANNER=$RDDIR/pmovie/scan/$MYSCANSCRIPT
 fi
 
 export PMOVDIR="$1"
