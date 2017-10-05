@@ -105,7 +105,9 @@ def genhash(frame,**kw):
         d = getkw('d');
         dims  = d['dims'];
         dupes = d['dupes'];
-    if not new:
+    if not getkw('new'):
+        if d is None:
+            raise ValueError("Old hashing requires hash spec");
         ip = np.array([frame['data'][l] for l in dims]).T;
         scaled = ((ip - d['mins'])/d['avgdiffs']).round().astype('i8');
         hashes = (scaled*d['pw']).sum(axis=1);
