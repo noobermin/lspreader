@@ -64,15 +64,19 @@ def firsthash(frame, removedupes=False):
 
 def firsthash_new(frame,**kw):
     kw['new']=True;
-    hashes = genhash(frame);
+    kw['dupes']=None;
+    hashes = genhash(frame,**kw);
     uni,counts = np.unique(hashes,return_counts=True);
     retd=sd(kw,dupes=uni[counts>1],removedupes=True);
     dupei = np.in1d(hashes, retd['dupes'])
     hashes[dupei] = -1
     return frame, retd;
-  
 
-def genhash(frame,d=None,new=False,removedupes=False,dims=None):
+def genhash(frame,d=None,
+            new=False,
+            dupes=None,
+            removedupes=False,
+            dims=None):
     '''
     Generate the hashes for the given frame for a specification
     given in the dictionary d returned from firsthash.
@@ -90,7 +94,6 @@ def genhash(frame,d=None,new=False,removedupes=False,dims=None):
       
     Returns an array of the shape of the frames with hashes.
     '''
-    dupes = None;
     if d is not None:
         if dims is None: dims = d['dims'];
         dupes = d['dupes'];
