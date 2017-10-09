@@ -244,7 +244,7 @@ def read_flds(file, header, var, vprint,
     vprint('Stringing domains together.');
     out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
     for k in out:
-        out[k] = out[k].astype('f4');
+        out[k] = out[k].astype('=f4');
     if not keep_edges:
         vprint('sorting rows...');
         sort = flds_firstsort(out)
@@ -287,9 +287,11 @@ def read_movie(file, header):
     for i,d in enumerate(frames):
         N = d['pnum'];
         lt=[('ip','>i4')]+list(zip(params,['>f4']*nparams));
+        nlt=[('ip','=i4')]+list(zip(params,['=f4']*nparams));
         file.seek(d['pos']);
         arr=np.frombuffer(file.read(N*4*len(lt)),dtype=np.dtype(lt),count=N);
         arr.flags.writeable = True;
+        arr=arr.astype(nlt);
         frames[i].update({'data':arr});
         del frames[i]['pos'];
     return frames;

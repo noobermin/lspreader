@@ -53,7 +53,7 @@ def firsthash(frame, removedupes=False):
     pws = list(pws);
     pw = [0]+[ ipw+jpw for ipw,jpw in
                zip([0]+pws[:-1],pws[:-1]) ];
-    pw = 10**np.array(pw);
+    pw = 10**np.array(pw);#.astype('int64');
     #the dictionary used for hashing
     d=dict(dims=dims, mins=mins, avgdiffs=avgdiffs, pw=pw);
     hashes = genhash(frame,removedupes=False,**d);
@@ -115,7 +115,7 @@ def genhash(frame,**kw):
     if not getkw('new'):
         ip = np.array([frame['data'][l] for l in dims]).T;
         scaled = ((ip - getkw('mins'))/getkw('avgdiffs')).round().astype('int64');
-        hashes = (scaled*getkw('pw')).sum(axis=1);
+        hashes = (scaled*getkw('pw')).sum(axis=1).astype('int64');
     else:
         hashes = np.array([
             struct.pack('{}{}'.format(len(dims),getkw('ftype')), *[p[l] for l in dims])
