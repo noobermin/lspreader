@@ -300,6 +300,8 @@ def read_particles(file, header):
     params,_  = zip(*header['params']);
     dt = list(zip(('ip',)+params, ['>i4']+['>f4']*len(params)));
     out = np.fromfile(file, dtype=dt,count=-1);
+    ndt= list(zip(('ip',)+params, ['=i4']+['=f4']*len(params)));
+    out = out.astype(ndt);
     return out;
 
 def read_pext(file, header):
