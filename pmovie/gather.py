@@ -21,4 +21,6 @@ for fname in opts['<input>']:
 if opts['--intersect']:
     intersect = np.load(opts['--intersect']);
     good.intersection_update(good);
-np.save(opts['<output>'],np.array(list(good)));
+good = np.array(list(good));
+good.sort();
+np.save(opts['<output>'],good);

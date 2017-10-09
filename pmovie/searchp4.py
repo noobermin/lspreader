@@ -28,6 +28,7 @@ for frame in frames:
     out   = np.empty(indices.shape, dtype=data.dtype);
     out[:]      = np.nan
     out['hash'] = -1;
+    out['ip']   =  0;
     outbools= np.in1d(indices, data['hash']);
     out[outbools] = data;
     outname = "{}".format(frame['step']);
