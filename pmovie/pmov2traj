@@ -21,6 +21,8 @@ Options:
     -l RDDIR             Set the path to lspreader. You pretty much want this to be
                          set if it isn't set by environment variable.
     -N                   Use the new trajectory file format for quicker(?) access.
+    -o OUTNAME           Set the output name of the trajectories 
+                         file. [default: trajectories.npz]
 
 For many more options, see this script with environment variables.
 "
@@ -31,7 +33,8 @@ CONDAFILE=${CONDAFILE:-"/home/ngirmang.1/conda"}
 RAMSESNODE=
 MYSCANSCRIPT=Escan.py
 NEWTRAJNPZ=
-while getopts ':hs:t:n:c:l:N' opt; do
+TRAJOUT=${TRAJOUT:-"trajectories.npz"}
+while getopts ':hs:t:n:c:l:o:N' opt; do
       case $opt in
           h)
               echo "$USAGE"
@@ -54,6 +57,7 @@ while getopts ':hs:t:n:c:l:N' opt; do
               esac
               ;;
           l)  RDDIR=$OPTARG;;
+          o)  TRAJOUT=$OPTARG;;
           c)  CONDAFILE=$OPTARG;;
           N)  NEWTRAJNPZ=1;;
           \?)
@@ -97,6 +101,7 @@ fail(){
     exit -1;
 }
 export NEWTRAJNPZ=$NEWTRAJNPZ
+export TRAJOUT=$TRAJOUT
 #executing
 >$LOGFILE
 firsthash >> $LOGFILE 2>&1 || fail "firsthash"

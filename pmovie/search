@@ -7,6 +7,7 @@ NPROCS=${NPROCS:-2}
 SLEEPTIME=${SLEEPTIME:-5}
 HASHFILE=${HASHFILE:-$OUTDIR/hash.d}
 SELECTED=${SELECTED:-$OUTDIR/selected.npy}
+TRAJOUT=${TRAJOUT:-"trajectories.npz"}
 [ -n "$NEWTRAJNPZ" ] && export TRAJOPT="-n"
 #now, we search
 echo "searching pmovies for hashes at $(date)"
@@ -22,11 +23,11 @@ while [ $(pgrep -f searchp4.py | wc -l) -gt 0 ]; do
 done
 echo "gathering for trajectories $(date)"
 
-traj.py $TRAJOPT $OUTDIR/trajectories.npz $(ls $OUTDIR/*.npz | grep '[0-9]\+\.npz' | sort -V)
+traj.py $TRAJOPT $OUTDIR/$TRAJOUT $(ls $OUTDIR/*.npz | grep '[0-9]\+\.npz' | sort -V)
 rm -v $( ls $OUTDIR/*.npz | grep '[0-9]\+\.npz' )
 echo "done at $(date)"
-if [ -e $OUTDIR/trajectories.npz ]; then
-    echo "file is available at $HOSTNAME:$PWD/$OUTDIR/trajectories.npz"
+if [ -e $OUTDIR/$TRAJOUT ]; then
+    echo "file is available at $HOSTNAME:$PWD/$OUTDIR/TRAJOUT"
 else
     echo "trajectories is not found, check the log for errors."
 fi;
