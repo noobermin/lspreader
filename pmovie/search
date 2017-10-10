@@ -23,8 +23,8 @@ while [ $(pgrep -f searchp4.py | wc -l) -gt 0 ]; do
 done
 echo "gathering for trajectories $(date)"
 
-traj.py $TRAJOPT $OUTDIR/$TRAJOUT $(ls $OUTDIR/*.npz | grep '[0-9]\+\.npz' | sort -V)
-rm -v $( ls $OUTDIR/*.npz | grep '[0-9]\+\.npz' )
+traj.py $TRAJOPT $OUTDIR/$TRAJOUT $(ls $OUTDIR/_*.npz | grep '_[0-9]\+\.npz' | sort -V)
+rm -v $( ls $OUTDIR/_*.npz | grep '[0-9]\+\.npz' )
 echo "done at $(date)"
 if [ -e $OUTDIR/$TRAJOUT ]; then
     echo "file is available at $HOSTNAME:$PWD/$OUTDIR/TRAJOUT"

@@ -21,8 +21,8 @@ Options:
     -l RDDIR             Set the path to lspreader. You pretty much want this to be
                          set if it isn't set by environment variable.
     -N                   Use the new trajectory file format for quicker(?) access.
-    -o OUTNAME           Set the output name of the trajectories 
-                         file. [default: trajectories.npz]
+    -o OUTNAME           Set the output name of the trajectories file. Please don't
+                         use names starting with underscores.[default: trajectories.npz]
 
 For many more options, see this script with environment variables.
 "

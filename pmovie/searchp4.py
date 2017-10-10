@@ -31,7 +31,7 @@ for frame in frames:
     out['ip']   =  0;
     outbools= np.in1d(indices, data['hash']);
     out[outbools] = data;
-    outname = "{}".format(frame['step']);
+    outname = "_{}".format(frame['step']);
     if opts['--dir']:
         outname = '{}/{}'.format(opts['--dir'], outname);
     np.savez(outname, data=out, time=frame['t']);
