@@ -315,7 +315,8 @@ def read_pext(file, header):
         params+=['E','xi','yi','zi'];
     #it's just floats here on out
     dt = list(zip(params, ['>f4']*len(params)));
-    out = np.fromfile(file,dtype=dt,count=-1);
+    ndt= [ (i[0],'=f4') for  i in dt ];
+    out = np.fromfile(file,dtype=dt,count=-1).astype(ndt);
     return out;
 
 def read(fname,**kw):

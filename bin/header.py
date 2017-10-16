@@ -7,9 +7,9 @@ Usage:
 
 Options:
   --help -h               Show this help.
-  --verbose v             Turn on verbosity.
+  --verbose -v            Turn on verbosity.
   --size -s               Output the size of the header in bytes.
-  --gzip -Z               Use gzip.
+  --gzip -Z               Use gzip. Otherwise guess based on name.
 '''
 
 from lspreader import lspreader as rd;
@@ -19,10 +19,11 @@ from docopt import docopt;
 opts=docopt(__doc__,help=True);
 verbose = opts['--verbose'];
 name = opts['<input>'];
+gzip = True if opts['--gzip'] else 'guess';
 h = rd.get_header(
     opts['<input>'],
-    size=opts['--size'], gzip=opts['--gzip']);
+    size=opts['--size'], gzip=gzip);
 if opts['--size']:
-    print("size:{}".format(h[1]));
+    print("{}".format(h[1]));
 else:
     print(h);
