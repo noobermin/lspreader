@@ -66,7 +66,7 @@ def getpextfnames(path):
     return [ ('{}/{}'.format(path,i),k) for i,k in zip(pext,key)
              if mnpext <= k <= mxpext];
 #read first directory. Must do this in order to get headers AND not skip ahead.
-pextfnames = getpextfnames(opts['<dirs>']);
+pextfnames = getpextfnames(opts['<dirs>'][0]);
 keys = [ i[1] for i in pextfnames ];
 headers = dict();
 ds = dict();
@@ -82,7 +82,7 @@ for pextfname,k in pextfnames:
 #obtain other directories
 pextfnames = [
     (fname, headers[k], k)
-    for idir in opts['<dirs>']
+    for idir in opts['<dirs>'][1:]
     for fname,k in getpextfnames(idir) ];
 vprint('reading planes');
 for path,header,k in pextfnames:
