@@ -62,7 +62,7 @@ def getpextfnames(path):
     return [ ('{}/{}'.format(path,i),k) for i,k in zip(pext,key)
              if mnpext <= k <= mxpext];
 dirs = [ i for path in opts['<dirs>'] for i in getpextfnames(path)];
-keys = np.unique([ i[i] for i in dirs ]);
+keys = np.unique([ i[1] for i in dirs ]);
 pextplanes = {k:[] for k in keys};
 for d in enumerate(dirs):
     pextplanes[d[1]].append(d[0]);
