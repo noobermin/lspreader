@@ -66,7 +66,7 @@ def getpextfnames(path):
     return [ ('{}/{}'.format(path,i),k) for i,k in zip(pext,key)
              if mnpext <= k <= mxpext];
 #read first directory. Must do this in order to get headers AND not skip ahead.
-pextfnames = getpextfnames(opts['dirs']);
+pextfnames = getpextfnames(opts['<dirs>']);
 keys = [ i[1] for i in pextfnames ];
 headers = dict();
 ds = dict();
