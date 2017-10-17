@@ -72,7 +72,7 @@ keys = np.unique([ i[1] for i in pextfnames ]);
 headers = dict();
 ds = dict();
 for pextfname,k in pextfnames[:len(keys)]:
-    with gzopen(path) as f:
+    with gzopen(pextfname) as f:
         header = get_header(f);
         ds[k] = [read_pext(f,header)];
     headers.append(header);
