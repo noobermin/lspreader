@@ -27,7 +27,7 @@ from lspreader.dotlsp import getdim,getpexts
 import os
 import numpy.lib.recfunctions as rfn;
 import gzip;
-
+from itertools import cycle;
 opts = docopt(__doc__,help=True);
 vprint = mkvprint(opts);
 
@@ -59,8 +59,11 @@ def getpextfnames(path):
             for f in pext ];
     return [ ('{}/{}'.format(path,i),k) for i,k in zip(pext,key)
              if mnpext <= k <= mxpext];
-dirs = [ i for path in opts['<dirs>'] for i in getpextfnames(path)];
-keys = np.unique([ i[1] for i in dirs ]);
+pextfnames = [ i for path in opts['<dirs>'] for i in getpextfnames(path)];
+#get headers from the first directory
+headers = [ get_header(fname,gzip='guess')
+            for fname in pextfnames[:len(opts['<dirs>'])]];
+keys = np.unique([ i[1] for i in pextfnames ]);
 pextplanes = {k:[] for k in keys};
 for d in dirs:
     pextplanes[d[1]].append(d[0]);
@@ -87,8 +90,8 @@ def process_plane(paths, header, k):
     return d
 vprint('');
 d = [ di
-      for paths,k in zip(pextplanes,keys)
-      for di in process_plane(paths,k)   ];
+      for paths,header, k in zip(pextplanes,cycle(headers),keys)
+      for di in process_plane(paths,header,k)   ];
 if len(d) == 0:
     print("no pext data");
     quit();
