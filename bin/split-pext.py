@@ -31,6 +31,12 @@ from itertools import cycle;
 opts = docopt(__doc__,help=True);
 vprint = mkvprint(opts);
 
+
+def gzopen(*a, **kw):
+    path = a[0];
+    openf = gzip.open if re.search(r'\.gz$', path) else open;
+    return openf(path);
+
 if opts['--lsp']:
     lspf=opts['--lsp'];
 else:
@@ -60,38 +66,38 @@ def getpextfnames(path):
     return [ ('{}/{}'.format(path,i),k) for i,k in zip(pext,key)
              if mnpext <= k <= mxpext];
 pextfnames = [ i for path in opts['<dirs>'] for i in getpextfnames(path)];
-#get headers from the first directory
-headers = [ get_header(fname[0],gzip='guess')
-            for fname in pextfnames[:len(opts['<dirs>'])]];
 keys = np.unique([ i[1] for i in pextfnames ]);
-pextplanes = {k:[] for k in keys};
-for d in pextfnames:
-    pextplanes[d[1]].append(d[0]);
-pextplanes = [ pextplanes[k] for k in keys ];
-def process_plane(paths, header, k):
-    #invariant: the files should be in order they are passed.
-    vprint('reading in files for {}'.format(k));
-    d = [];
-    for path in paths:
-        openf = gzip.open if re.search(r'\.gz$', path) else open;
-        with openf(path) as f:
-            d.append(read_pext(f,header));
-    d[:] = [
-        rfn.rec_append_fields(
-            di, 'species',
-            np.ones(len(di)).astype(int)*pext_info[k]['species'])
-        for di in d ];
-    d = [ i for i in d if i['t'].shape[0] > 0];
+
+#read first directory. Must do this in order to get headers AND not skip ahead.
+headers = dict();
+ds = dict();
+for pextfname,k in pextfnames[:len(keys)]:
+    with gzopen(path) as f:
+        header = get_header(f);
+        ds[k] = [read_pext(f,header)];
+    headers.append(header);
+pextfnames[len(keys):] = [
+    (fname, headers[k], k)
+    for fname,k in pextfnames[len(keys):] ];
+
+vprint('reading planes');
+for path,header,k in  pextfnames[len(keys):]:
+    with gzopen(path) as f:
+        d = read_pext(f,header);
+    d = rfn.rec_append_fields(
+        d, 'species',
+        np.ones(len(d)).astype(int)*pext_info[k]['species'])
+    ds[k].append(d);
+
+vprint('stringing together');
+for k in keys:
     #make a mask of times less than the minimum of the next pexts
     #only take those in the previous run
     #only assign up to the last element of d.
-    if len(d) > 1:
-        d[:-1] = [ i[ i['t'] < j['t'].min() ] for i,j in zip(d[:-1],d[1:]) ];
-    return d
-vprint('reading planes');
-d = [ di
-      for paths,header, k in zip(pextplanes,cycle(headers),keys)
-      for di in process_plane(paths,header,k)   ];
+    if len(ds[k]) > 1:
+        ds[k][:-1] = [ i[ i['t'] < j['t'].min() ] for i,j in zip(ds[k][:-1],ds[k][1:]) ];
+
+d = [ di for k in ds.keys() for di in ds[k] ];
 if len(d) == 0:
     print("no pext data");
     quit();
