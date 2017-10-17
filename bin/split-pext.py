@@ -18,7 +18,7 @@ Options:
                               .lsp file name.
 '''
 from docopt import docopt;
-from lspreader.lspreader import read_pext, read_header;
+from lspreader.lspreader import read_pext, get_header;
 from lspreader.pext import add_quantities;
 import numpy as np;
 from pys import parse_ituple, mkvprint
