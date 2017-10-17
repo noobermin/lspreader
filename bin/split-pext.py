@@ -78,7 +78,7 @@ for pextfname,k in pextfnames[:len(keys)]:
     d = rfn.rec_append_fields(
         d, 'species',
         np.ones(len(d)).astype(int)*pext_info[k]['species'])
-    ds[k] = d;
+    ds[k] = [d];
     headers[k]=header;
 
 pextfnames[len(keys):] = [
