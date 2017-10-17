@@ -54,6 +54,7 @@ else:
 outkeys = set();
 allkeys = [];
 def getpextfnames(path):
+    files = os.listdir(path);
     pext = [f for f in files if re.search("pext[0-9]+.p4",f)];
     key = [ float(re.search("pext([0-9]+).p4",f).group(1))
             for f in pext ];
