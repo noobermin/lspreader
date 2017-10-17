@@ -74,12 +74,16 @@ ds = dict();
 for pextfname,k in pextfnames[:len(keys)]:
     with gzopen(pextfname) as f:
         header = get_header(f);
-        ds[k] = [read_pext(f,header)];
+        d = read_pext(f,header);
+    d = rfn.rec_append_fields(
+        d, 'species',
+        np.ones(len(d)).astype(int)*pext_info[k]['species'])
+    ds[k] = d;
     headers[k]=header;
+
 pextfnames[len(keys):] = [
     (fname, headers[k], k)
     for fname,k in pextfnames[len(keys):] ];
-
 vprint('reading planes');
 for path,header,k in  pextfnames[len(keys):]:
     with gzopen(path) as f:
