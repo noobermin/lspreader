@@ -28,10 +28,8 @@ import os
 import numpy.lib.recfunctions as rfn;
 import gzip;
 
-def _vprint(s):
-    print(s);
 opts = docopt(__doc__,help=True);
-vprint = mkvprint(opts['--verbose']);
+vprint = mkvprint(opts);
 
 if opts['--lsp']:
     lspf=opts['--lsp'];
