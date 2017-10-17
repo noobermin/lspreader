@@ -64,7 +64,7 @@ def getpextfnames(path):
 dirs = [ i for path in opts['<dirs>'] for i in getpextfnames(path)];
 keys = np.unique([ i[1] for i in dirs ]);
 pextplanes = {k:[] for k in keys};
-for d in enumerate(dirs):
+for d in dirs:
     pextplanes[d[1]].append(d[0]);
     
 def process_plane(paths, header, k):
