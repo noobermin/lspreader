@@ -61,7 +61,7 @@ def getpextfnames(path):
              if mnpext <= k <= mxpext];
 pextfnames = [ i for path in opts['<dirs>'] for i in getpextfnames(path)];
 #get headers from the first directory
-headers = [ get_header(fname,gzip='guess')
+headers = [ get_header(fname[0],gzip='guess')
             for fname in pextfnames[:len(opts['<dirs>'])]];
 keys = np.unique([ i[1] for i in pextfnames ]);
 pextplanes = {k:[] for k in keys};
@@ -88,7 +88,7 @@ def process_plane(paths, header, k):
     if len(d) > 1:
         d[:-1] = [ i[ i['t'] < j['t'].min() ] for i,j in zip(d[:-1],d[1:]) ];
     return d
-vprint('');
+vprint('reading planes');
 d = [ di
       for paths,header, k in zip(pextplanes,cycle(headers),keys)
       for di in process_plane(paths,header,k)   ];
