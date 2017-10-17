@@ -65,13 +65,12 @@ def getpextfnames(path):
             for f in pext ];
     return [ ('{}/{}'.format(path,i),k) for i,k in zip(pext,key)
              if mnpext <= k <= mxpext];
-pextfnames = [ i for path in opts['<dirs>'] for i in getpextfnames(path)];
-keys = np.unique([ i[1] for i in pextfnames ]);
-
 #read first directory. Must do this in order to get headers AND not skip ahead.
+pextfnames = getpextfnames(opts['dirs']);
+keys = [ i[1] for i in pextfnames ];
 headers = dict();
 ds = dict();
-for pextfname,k in pextfnames[:len(keys)]:
+for pextfname,k in pextfnames:
     with gzopen(pextfname) as f:
         header = get_header(f);
         d = read_pext(f,header);
@@ -80,19 +79,19 @@ for pextfname,k in pextfnames[:len(keys)]:
         np.ones(len(d)).astype(int)*pext_info[k]['species'])
     ds[k] = [d];
     headers[k]=header;
-
-pextfnames[len(keys):] = [
+#obtain other directories
+pextfnames = [
     (fname, headers[k], k)
-    for fname,k in pextfnames[len(keys):] ];
+    for idir in opts['<dirs>']
+    for fname,k in getpextfnames(idir) ];
 vprint('reading planes');
-for path,header,k in  pextfnames[len(keys):]:
+for path,header,k in pextfnames:
     with gzopen(path) as f:
         d = read_pext(f,header);
     d = rfn.rec_append_fields(
         d, 'species',
         np.ones(len(d)).astype(int)*pext_info[k]['species'])
     ds[k].append(d);
-
 vprint('stringing together');
 for k in keys:
     #make a mask of times less than the minimum of the next pexts
@@ -102,6 +101,7 @@ for k in keys:
         ds[k][:-1] = [ i[ i['t'] < j['t'].min() ] for i,j in zip(ds[k][:-1],ds[k][1:]) ];
 
 d = [ di for k in ds.keys() for di in ds[k] ];
+vprint('read {} planes'.format(len(d)));
 if len(d) == 0:
     print("no pext data");
     quit();
