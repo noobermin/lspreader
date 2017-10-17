@@ -67,7 +67,7 @@ keys = np.unique([ i[1] for i in pextfnames ]);
 pextplanes = {k:[] for k in keys};
 for d in pextfnames:
     pextplanes[d[1]].append(d[0]);
-pextplanes = [ pextplane[k] for k in keys ];
+pextplanes = [ pextplanes[k] for k in keys ];
 def process_plane(paths, header, k):
     #invariant: the files should be in order they are passed.
     vprint('reading in files for {}'.format(k));
