@@ -36,6 +36,7 @@ vprint = mkvprint(opts['--verbose']);
 if opts['--lsp']:
     lspf=opts['--lsp'];
 else:
+    files = os.listdir('.');
     lspf=[f for f in files if re.search(".*\.lsp$",f)][0];
 with open(lspf,"r") as f:
     lsp=f.read();
