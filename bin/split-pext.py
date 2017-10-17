@@ -65,7 +65,7 @@ headers = [ get_header(fname[0],gzip='guess')
             for fname in pextfnames[:len(opts['<dirs>'])]];
 keys = np.unique([ i[1] for i in pextfnames ]);
 pextplanes = {k:[] for k in keys};
-for d in dirs:
+for d in pextfnames:
     pextplanes[d[1]].append(d[0]);
     
 def process_plane(paths, header, k):
@@ -79,7 +79,7 @@ def process_plane(paths, header, k):
     d[:] = [
         rfn.rec_append_fields(
             di, 'species',
-            np.ones(len(id)).astype(int)*pext_info[k]['species'])
+            np.ones(len(di)).astype(int)*pext_info[k]['species'])
         for di in d ];
     d = [ i for i in d if i['t'].shape[0] > 0];
     #make a mask of times less than the minimum of the next pexts
