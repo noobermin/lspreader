@@ -112,9 +112,11 @@ d.sort(order='t');
 if latetime:
     print('cutting out times greater than {}'.format(latetime));
     d = d[ d['t'] <= latetime ];
+del ds;
 #calculating quantities
 if opts['--reverse']:
     dim = dim[:-2] + list(reversed(dim[-2:]))
 massE = float(opts['--massE']) if opts['--massE'] else None;
+vprint('adding quantities');
 d = add_quantities(d, dim, massE=massE);
 np.save(outname, d);
