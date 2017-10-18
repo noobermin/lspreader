@@ -24,7 +24,7 @@ def add_quantities(d, coords=None, massE=0.511e6):
       massE  : rest mass energy of particles.
     Returns a copy with the quantities appended.
     '''
-    keys,items = zip(*calc_quantities(d,coords=coords,massE=massE));
+    keys,items = zip(*calc_quantities(d,coords=coords,massE=massE).items());
     return rfn.rec_append_fields(
         d, keys, items);
 
