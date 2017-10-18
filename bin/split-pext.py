@@ -76,7 +76,7 @@ for pextfname,k in pextfnames:
         d = read_pext(f,header);
     d = rfn.append_fields(
         d, 'species',
-        np.ones(len(d)).astype(int)*pext_info[k]['species'])
+        np.ones(len(d)).astype(int)*pext_info[k]['species'],usemask=False);
     ds[k] = [d];
     headers[k]=header;
 #obtain other directories
@@ -90,7 +90,7 @@ for path,header,k in pextfnames:
         d = read_pext(f,header);
     d = rfn.append_fields(
         d, 'species',
-        np.ones(len(d)).astype(int)*pext_info[k]['species'])
+        np.ones(len(d)).astype(int)*pext_info[k]['species'],usemask=False);
     ds[k].append(d);
 vprint('stringing together');
 for k in keys:
@@ -127,4 +127,4 @@ for k in qs:
     out[k] = qs[k];
 for k in d.dtype.names:
     out[k] = d[k];
-np.save(outname, d);
+np.save(outname, out);
