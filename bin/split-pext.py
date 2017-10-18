@@ -19,13 +19,12 @@ Options:
 '''
 from docopt import docopt;
 from lspreader.lspreader import read_pext, get_header;
-from lspreader.pext import add_quantities;
+from lspreader.pext import calc_quantities;
 import numpy as np;
 from pys import parse_ituple, mkvprint
 import re;
 from lspreader.dotlsp import getdim,getpexts
-import os
-import numpy.lib.recfunctions as rfn;
+import os;
 import gzip;
 from itertools import cycle;
 opts = docopt(__doc__,help=True);
@@ -35,7 +34,7 @@ vprint = mkvprint(opts);
 def gzopen(*a, **kw):
     path = a[0];
     openf = gzip.open if re.search(r'\.gz$', path) else open;
-    return openf(path);
+    return openf(*a,**kw);
 
 if opts['--lsp']:
     lspf=opts['--lsp'];
@@ -106,17 +105,25 @@ if len(d) == 0:
     print("no pext data");
     quit();
 d = np.concatenate(d);
+del ds;
 latetime = float(opts['--late-time']) if opts['--late-time'] else None;
 vprint('sorting by times')
 d.sort(order='t');
 if latetime:
     print('cutting out times greater than {}'.format(latetime));
     d = d[ d['t'] <= latetime ];
-del ds;
 #calculating quantities
 if opts['--reverse']:
     dim = dim[:-2] + list(reversed(dim[-2:]))
 massE = float(opts['--massE']) if opts['--massE'] else None;
 vprint('adding quantities');
-d = add_quantities(d, dim, massE=massE);
+qs = calc_quantities(d, coords=dim, massE=massE);
+names = list(d.dtype.names) + qs.keys();
+outdt = [(name,'float') for name in names];
+vprint('creating output');
+out=np.empty(d.shape[0],dtype=outdt);
+for k in qs:
+    out[k] = qs[k];
+for k in d.dtype.names:
+    out[k] = d[k];
 np.save(outname, d);
