@@ -27,6 +27,7 @@ from lspreader.dotlsp import getdim,getpexts
 import os;
 import gzip;
 from itertools import cycle;
+import numpy.lib.recfunctions as rfn;
 opts = docopt(__doc__,help=True);
 vprint = mkvprint(opts);
 
@@ -73,7 +74,7 @@ for pextfname,k in pextfnames:
     with gzopen(pextfname) as f:
         header = get_header(f);
         d = read_pext(f,header);
-    d = rfn.rec_append_fields(
+    d = rfn.append_fields(
         d, 'species',
         np.ones(len(d)).astype(int)*pext_info[k]['species'])
     ds[k] = [d];
@@ -87,7 +88,7 @@ vprint('reading planes');
 for path,header,k in pextfnames:
     with gzopen(path) as f:
         d = read_pext(f,header);
-    d = rfn.rec_append_fields(
+    d = rfn.append_fields(
         d, 'species',
         np.ones(len(d)).astype(int)*pext_info[k]['species'])
     ds[k].append(d);
