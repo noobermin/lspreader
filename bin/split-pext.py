@@ -120,7 +120,8 @@ massE = float(opts['--massE']) if opts['--massE'] else None;
 vprint('adding quantities');
 qs = calc_quantities(d, coords=dim, massE=massE);
 names = list(d.dtype.names) + qs.keys();
-outdt = [(name,'float') for name in names];
+ftype = str(d.dtype[0]);
+outdt = [(name,ftype) for name in names];
 vprint('creating output');
 out=np.empty(d.shape[0],dtype=outdt);
 for k in qs:
