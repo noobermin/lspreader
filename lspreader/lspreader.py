@@ -297,7 +297,7 @@ def read_movie(file, header):
 def read_particles(file, header):
     params,_  = zip(*header['params']);
     dt = list(zip(('ip',)+params, ['>i4']+['>f4']*len(params)));
-    ndt= [(i[0], re.subs(">","=",i[1])) for i in dt ];
+    ndt= [(i[0], re.sub(">","=",i[1])) for i in dt ];
     out = np.fromfile(file,dtype=dt,count=-1).astype(ndt,copy=False);
     return out;
 
