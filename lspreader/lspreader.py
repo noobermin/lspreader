@@ -286,12 +286,10 @@ def read_movie(file, header):
         frames.append(d);
     for i,d in enumerate(frames):
         N = d['pnum'];
-        lt=[('ip','>i4')]+list(zip(params,['>f4']*nparams));
-        nlt=[('ip','=i4')]+list(zip(params,['=f4']*nparams));
+        dt = [('ip','>i4')]+list(zip(params,['>f4']*nparams));
+        ndt= [('ip','=i4')]+list(zip(params,['=f4']*nparams));
         file.seek(d['pos']);
-        arr=np.frombuffer(file.read(N*4*len(lt)),dtype=np.dtype(lt),count=N);
-        arr.flags.writeable = True;
-        arr=arr.astype(nlt);
+        arr = np.fromfile(file,dtype=dt,count=N).astype(ndt,copy=False);
         frames[i].update({'data':arr});
         del frames[i]['pos'];
     return frames;
@@ -299,9 +297,8 @@ def read_movie(file, header):
 def read_particles(file, header):
     params,_  = zip(*header['params']);
     dt = list(zip(('ip',)+params, ['>i4']+['>f4']*len(params)));
-    out = np.fromfile(file, dtype=dt,count=-1);
-    ndt= list(zip(('ip',)+params, ['=i4']+['=f4']*len(params)));
-    out = out.astype(ndt);
+    ndt= [(i[0], re.subs(">","=",i[1])) for i in dt ];
+    out = np.fromfile(file,dtype=dt,count=-1).astype(ndt,copy=False);
     return out;
 
 def read_pext(file, header):
@@ -316,7 +313,7 @@ def read_pext(file, header):
     #it's just floats here on out
     dt = list(zip(params, ['>f4']*len(params)));
     ndt= [ (i[0],'=f4') for  i in dt ];
-    out = np.fromfile(file,dtype=dt,count=-1).astype(ndt);
+    out = np.fromfile(file,dtype=dt,count=-1).astype(ndt,copy=False);
     return out;
 
 def read(fname,**kw):
