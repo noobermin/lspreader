@@ -94,6 +94,8 @@ for path,header,k in pextfnames:
     ds[k].append(d);
 vprint('stringing together');
 for k in keys:
+    #remove empties
+    ds[k] = [ i for i in ds[k] if len(i) > 0 ];
     #make a mask of times less than the minimum of the next pexts
     #only take those in the previous run
     #only assign up to the last element of d.
