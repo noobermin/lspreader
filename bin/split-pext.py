@@ -4,11 +4,11 @@ Read in pext files from directories with restart runs and output a recarray.
 Requires a .lsp file to be in the path, or to be passed.
 
 Usage:
-   simple-pext.py [options] <dirs>...
+   split-pext.py [options] <dirs>...
 
 Options:
     --help -h                 This help.
-    --lsp=L -L l              Read this .lsp file specifically.
+    --lsp=L -L L              Read this .lsp file specifically.
     --late-time=TIME -l TIME  Cut out after this time.
     --reverse -r              Reverse Y and Z.
     --massE=ME                Rest energy of the particle. [default: 0.511e6]
@@ -41,7 +41,10 @@ if opts['--lsp']:
     lspf=opts['--lsp'];
 else:
     files = os.listdir('.');
-    lspf=[f for f in files if re.search(".*\.lsp$",f)][0];
+    lspf=[f for f in files if re.search(".*\.lsp$",f)];
+    if len(lspf) < 1:
+        raise ValueError("Need to specify a .lsp file or see one in the same directory.");
+    lspf=lspf[0];
 with open(lspf,"r") as f:
     lsp=f.read();
 if not opts['--output']:
