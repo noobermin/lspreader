@@ -9,13 +9,13 @@ setup(name='lspreader',
       license='MIT',
       packages=['lspreader'],
       install_requires=[
-          'numpy>=1.10.1',
-          'scipy>=0.16.0',
-          'h5py>=2.5.0',
-          'pys>=0.0.9',
+          'numpy>=1.13.1',
+          'scipy>=0.19.1',
+          'pys>=0.0.10',
+          'docopt>=0.6.2',
       ],
       scripts=[
-          'bin/read.py',
+          'bin/p4read.py',
           'bin/split-pext.py',
           'bin/simple-pext.py',
           'bin/p4header.py'

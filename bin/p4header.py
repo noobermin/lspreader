@@ -3,7 +3,7 @@
 Just get the header of a .p4 and output it.
 
 Usage:
-  header.py [options] <input>
+  p4header.py [options] <input>
 
 Options:
   --help -h               Show this help.

@@ -3,7 +3,7 @@
 Extract data directly.
 
 Usage: 
-    read.py [options] <input> <output>
+    p4read.py [options] <input> <output>
 
 Options:
     --npy -n          Output to npy instead of pickle.
