@@ -152,12 +152,15 @@ def get_header(file,**kw):
     return header;
 
 
-def flds_firstsort(d):
+def flds_firstsort(d,xs=None,ys=None,zs=None):
     '''
     Perform a lexsort and return the sort indices and shape as a tuple.
     '''
-    shape = [ len( np.unique(d[l]) )
-              for l in ['xs', 'ys', 'zs'] ];
+    if xs is None: xs = d['xs'];
+    if ys is None: ys = d['ys'];
+    if zs is None: zs = d['zs']; 
+    shape = [ len( np.unique(i) )
+              for i in [xs, ys, zs] ];
     si = np.lexsort((d['z'],d['y'],d['x']));
     return si,shape;
 def flds_sort(d,s):
@@ -183,10 +186,7 @@ def flds_sort(d,s):
 def read_flds_new(
         file, header, var, vprint,
         vector=True,keep_edges=False,
-        sort=None,first_sort=False,
-        keep_xs=False,
-        return_array=False,
-        mempattern=None):
+        return_array=False,**kw):
     if vector:
         size=3;
         readin = set();
@@ -201,100 +201,64 @@ def read_flds_new(
     doms = [];
     qs = [i[0] for i in header['quantities']];
     #get global array size
-    I,J,K = [],[],[];
-    Is,Js,Ks = 0,0,0;
-    Ips,Jps,Kps = [],[],[];
-    nbuffs= [];
+    start = file.tell();
     for i in range(header['domains']):
         #seek over indices
         iR, jR, kR = get_int(file, N=3);
-        nI = get_int(file); file.seak(nI*4);
-        nJ = get_int(file); file.seak(nJ*4);
-        nK = get_int(file); file.seak(nK*4);
-        nAlls.append(nI*nJ*nK);
-    for i in range(header['domains']):
-        iR, jR, kR = get_int(file, N=3);
-        #getting grid parameters (real coordinates)
-        nI = get_int(file); Ip = get_float(file,N=nI, forcearray=True);
-        nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
-        nK = get_int(file); Kp = get_float(file,N=nK, forcearray=True);
-        nAll = nI*nJ*nK;
-        vprint('reading domain with dimensions {}x{}x{}={}.'.format(nI,nJ,nK,nAll));
-        d={}
-        d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
-        d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
-        d['z'], d['y'], d['x'] = d['z'].ravel(), d['y'].ravel(), d['x'].ravel();
+        nI = get_int(file); xs = get_float(file,N=nI, forcearray=True);
+        nJ = get_int(file); ys = get_float(file,N=nJ, forcearray=True);
+        nK = get_int(file); zs = get_float(file,N=nK, forcearray=True);
+        nAll=nI*nJ*nK;
+        dom.append(dict(xs=xs,ys=ys,zs=zs,nAll=nAll,point=file.tell()));
+        file.seek(nAll*4*len(qs)*size,1);
+    outsz = sum(nAlls*size);
+    vprint("Allocating output. If this fails, you don't have enough memory!");
+    out = { iq:np.zeros(outsz) for iq in qs+['x','y','z'] };
+    #position in output
+    outi = 0;
+    for i,dom in enumerate(doms):
+        file.seek(dom['point']);
+        nAll = dom['nAll'];
+        vprint('reading domain {}'.format(i));
         for quantity in qs:
             if quantity not in readin:
                 vprint('skipping {}'.format(quantity));
                 file.seek(nAll*4*size,1);
             else:
                 vprint('reading {}'.format(quantity));
-                d[quantity] = get_float(file,N=nAll*size);
-                if size==3:
-                    data=d[quantity].reshape(nAll,3).T;
-                    d[quantity+'x'],d[quantity+'y'],d[quantity+'z']= data;
-                    del data, d[quantity];
-        doms.append(d);
-    if not keep_edges:
-        vprint("removing edges");
-        dims = ['xs','ys','zs'];
-        readqs = [k for k in doms[0].keys()
-                  if k not in dims ] if len(doms) > 0 else None;
-        mins = [ min([d[l].min() for d in doms])
-                 for l in dims ];
-        def cutdom(d):
-            ldim = [len(d[l]) for l in dims];
-            cuts = [ np.isclose(d[l][0], smin)
-                     for l,smin in zip(dims,mins) ];
-            cuts[:] = [None if i else 1
-                       for i in cuts];
-            for quantity in readqs:
-                d[quantity]=d[quantity].reshape((ldim[2],ldim[1],ldim[0]));
-                d[quantity]=d[quantity][cuts[2]:,cuts[1]:,cuts[0]:].ravel();
-            for l,cut in zip(dims,cuts):
-                d[l] = d[l][cut:];
-            return d;
-        doms[:] = [cutdom(d) for d in doms];
-    vprint('Stringing domains together.');
-    
-    if mempattern == 'memsave_1':
-        keys = doms[0].keys();
-        for k in keys:
-            out[k] = np.concatenate([d[k] for d in doms]);
-            for d in doms:
-                del d[k];
-    elif mempattern == 'memsave_2':
-        keys = doms[0].keys();
-        for k in keys:
-            out[k] = doms[0][k]
-            del doms[0][k];
-            for d in doms[1:]:
-                out[k] = np.concatenate((out[k],d[k]));
-                del d[k]
-    else:    
-        out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
-    del doms;
-
+                data = get_float(file,N=nAll*size);
+                if size == 1:
+                    out[k][outi:nAll] = data;
+                else:
+                    data = data.reshape(nAll,3).T;
+                    out[k+'x'][outi:nAll] = data[0];
+                    out[k+'y'][outi:nAll] = data[1];
+                    out[k+'z'][outi:nAll] = data[2];
+                del data;
+        Z,Y,X = np.meshgrid(doms['zs'],doms['ys'],doms['xs']);
+        out['x'][outi:nAll] = X.ravel();
+        out['y'][outi:nAll] = Y.ravel();
+        out['z'][outi:nAll] = Z.ravel();
+        del X,Y,Z;
+        outi+=nAll;
+    xs=np.concatenate([dom['xs'] for dom in doms]).astype("=f4")
+    ys=np.concatenate([dom['ys'] for dom in doms]).astype("=f4")
+    zs=np.concatenate([dom['zs'] for dom in doms]).astype("=f4")
+    del doms,dom;
     for k in out:
         out[k] = out[k].astype('=f4');
-    if not keep_edges:
-        vprint('sorting rows...');
-        sort = flds_firstsort(out)
-        out = flds_sort(out,sort);
-    if not keep_xs:
-        out.pop('xs',None);
-        out.pop('ys',None);
-        out.pop('zs',None);
-        if return_array:
-            vprint('stuffing into array'.format(k));
-            keys = sorted(out.keys());
-            dt = list(zip(keys,['f4']*len(out)));
-            rout = np.zeros(out['x'].shape,dtype=dt);
-            for k in keys:
-                vprint('saving {}'.format(k));
-                rout[k] = out[k];
-            out=rout;
+    vprint('sorting rows, time this');
+    sort = flds_firstsort(out,xs=xs,ys=ys,zs=zs)
+    out = flds_sort(out,sort);
+    if return_array:
+        vprint('stuffing into array'.format(k));
+        keys = sorted(out.keys());
+        dt = list(zip(keys,['f4']*len(out)));
+        rout = np.zeros(out['x'].shape,dtype=dt);
+        for k in keys:
+            vprint('saving {}'.format(k));
+            rout[k] = out[k];
+        out=rout;
     if first_sort and not keep_edges:
         out = (out, sort);
     return out;
@@ -391,7 +355,7 @@ def read_flds(file, header, var, vprint,
             vprint("concatenating for quantity '{}'".format(k));
             out[k] = [];
             for i,ic in enumerate(cs):
-                vprint('processing chunk {} of {}'.format(i,len(cs)));
+                vprint('processing chunk {} of {}'.format(i,len(cs)-1));
                 con = (out[k],) + tuple((di[k] for di in ic ))
                 out[k] = np.concatenate(con)
                 del con;
@@ -510,6 +474,7 @@ def read(fname,**kw):
                     Requires of course that the quantities have the same shape.
     mempattern   -- Change the memory pattern used in order to try to save on memory.
                     Values can be "memsave_1" or "memsave_2"
+    new_reader   -- Try the new field reader.
     '''
     if test(kw,'gzip') and kw['gzip'] == 'guess':
         kw['gzip'] = re.search(r'\.gz$', fname) is not None;
@@ -527,6 +492,7 @@ def read(fname,**kw):
             header = get_header(file);
         vprint = kw['vprint'] if test(kw, 'vprint') else lambda s: None;
         if 2 <= header['dump_type'] <= 3 :
+            fldscall = read_flds;
             if not test(kw, 'var'):
                 var=[i[0] for i in header['quantities']];
             else:
@@ -544,9 +510,11 @@ def read(fname,**kw):
                 if mempattern not in [None, 'memsave_1', 'memsave_2'] or re.match("^chunk_",mempattern):
                     print("warning: unrecognized mempattern {}, using default".format(
                         mempattern));
+            if test(kw,'new_reader'):
+                fldscall = read_flds_new;
         readers = {
             1: lambda: read_particles(file, header),
-            2: lambda: read_flds(
+            2: lambda: fldscall(
                 file,header,var,vprint,
                 keep_edges=keep_edges,
                 first_sort=first_sort,
@@ -554,7 +522,7 @@ def read(fname,**kw):
                 keep_xs=keep_xs,
                 return_array=return_array,
                 mempattern=mempattern,),
-            3: lambda: read_flds(
+            3: lambda: fldscall(
                 file,header,var, vprint,
                 keep_edges=keep_edges,
                 first_sort=first_sort,
