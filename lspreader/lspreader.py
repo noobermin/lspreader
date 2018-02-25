@@ -183,7 +183,8 @@ def read_flds(file, header, var, vprint,
               vector=True,keep_edges=False,
               sort=None,first_sort=False,
               keep_xs=False,
-              return_array=False):
+              return_array=False,
+              mempattern=None):
     if vector:
         size=3;
         readin = set();
@@ -242,7 +243,25 @@ def read_flds(file, header, var, vprint,
             return d;
         doms[:] = [cutdom(d) for d in doms];
     vprint('Stringing domains together.');
-    out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
+    
+    if mempattern == 'memsave_1':
+        keys = doms[0].keys();
+        for k in keys:
+            out[k] = np.concatenate([d[k] for d in doms]);
+            for d in doms:
+                del d[k];
+    elif mempattern == 'memsave_2':
+        keys = doms[0].keys();
+        for k in keys:
+            out[k] = doms[0][k]
+            del doms[0][k];
+            for d in doms[1:]:
+                out[k] = np.concatenate((out[k],d[k]));
+                del d[k]
+    else:    
+        out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
+    del doms;
+
     for k in out:
         out[k] = out[k].astype('=f4');
     if not keep_edges:
@@ -350,6 +369,8 @@ def read(fname,**kw):
                     with x,y,z returned.
     return_array -- If set to truthy, then try to return a numpy array with a dtype.
                     Requires of course that the quantities have the same shape.
+    mempattern   -- Change the memory pattern used in order to try to save on memory.
+                    Values can be "memsave_1" or "memsave_2"
     '''
     if test(kw,'gzip') and kw['gzip'] == 'guess':
         kw['gzip'] = re.search(r'\.gz$', fname) is not None;
@@ -379,6 +400,11 @@ def read(fname,**kw):
                 sort = None;
             keep_xs = test(kw, 'keep_xs');
             return_array = test(kw, 'return_array');
+            if test(kw,'mempattern'):
+                mempattern = kw['mempattern'];
+                if mempattern not in [None, 'memsave_1', 'memsave_2']:
+                    print("warning: unrecognized mempattern {}, using default".format(
+                        mempattern));
         readers = {
             1: lambda: read_particles(file, header),
             2: lambda: read_flds(
@@ -395,6 +421,7 @@ def read(fname,**kw):
                 sort=sort,
                 keep_xs=keep_xs,
                 return_array=return_array,
+                mempattern=mempattern,
                 vector=False),
             6: lambda: read_movie(file, header),
             10:lambda: read_pext(file,header)
