@@ -641,8 +641,8 @@ def read(fname,**kw):
     if test(kw,'gzip'):
         openf = gzip.open;
     else:
-        print("not buffering");
         if test(kw,'nobuffer'):
+            print("not buffering");
             openf = lambda fname,mode: open(fname,mode,buffering=0)
         else:
             openf=open;
