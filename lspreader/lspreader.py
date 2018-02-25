@@ -179,6 +179,115 @@ def flds_sort(d,s):
         d[l] = np.squeeze(d[l]);
     return d;
 
+
+def read_flds_new(
+        file, header, var, vprint,
+        vector=True,keep_edges=False,
+        sort=None,first_sort=False,
+        keep_xs=False,
+        return_array=False,
+        mempattern=None):
+    if vector:
+        size=3;
+        readin = set();
+        for i in var:#we assume none of the fields end in x
+            if i[-1] == 'x' or i[-1] == 'y' or i[-1] == 'z':
+                readin.add(i[:-1]);
+            else:
+                readin.add(i);
+    else:
+        size=1;
+        readin = set(var);
+    doms = [];
+    qs = [i[0] for i in header['quantities']];
+    for i in range(header['domains']):
+        iR, jR, kR = get_int(file, N=3);
+        #getting grid parameters (real coordinates)
+        nI = get_int(file); Ip = get_float(file,N=nI, forcearray=True);
+        nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
+        nK = get_int(file); Kp = get_float(file,N=nK, forcearray=True);
+        nAll = nI*nJ*nK;
+        vprint('reading domain with dimensions {}x{}x{}={}.'.format(nI,nJ,nK,nAll));
+        d={}
+        d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
+        d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
+        d['z'], d['y'], d['x'] = d['z'].ravel(), d['y'].ravel(), d['x'].ravel();
+        for quantity in qs:
+            if quantity not in readin:
+                vprint('skipping {}'.format(quantity));
+                file.seek(nAll*4*size,1);
+            else:
+                vprint('reading {}'.format(quantity));
+                d[quantity] = get_float(file,N=nAll*size);
+                if size==3:
+                    data=d[quantity].reshape(nAll,3).T;
+                    d[quantity+'x'],d[quantity+'y'],d[quantity+'z']= data;
+                    del data, d[quantity];
+        doms.append(d);
+    if not keep_edges:
+        vprint("removing edges");
+        dims = ['xs','ys','zs'];
+        readqs = [k for k in doms[0].keys()
+                  if k not in dims ] if len(doms) > 0 else None;
+        mins = [ min([d[l].min() for d in doms])
+                 for l in dims ];
+        def cutdom(d):
+            ldim = [len(d[l]) for l in dims];
+            cuts = [ np.isclose(d[l][0], smin)
+                     for l,smin in zip(dims,mins) ];
+            cuts[:] = [None if i else 1
+                       for i in cuts];
+            for quantity in readqs:
+                d[quantity]=d[quantity].reshape((ldim[2],ldim[1],ldim[0]));
+                d[quantity]=d[quantity][cuts[2]:,cuts[1]:,cuts[0]:].ravel();
+            for l,cut in zip(dims,cuts):
+                d[l] = d[l][cut:];
+            return d;
+        doms[:] = [cutdom(d) for d in doms];
+    vprint('Stringing domains together.');
+    
+    if mempattern == 'memsave_1':
+        keys = doms[0].keys();
+        for k in keys:
+            out[k] = np.concatenate([d[k] for d in doms]);
+            for d in doms:
+                del d[k];
+    elif mempattern == 'memsave_2':
+        keys = doms[0].keys();
+        for k in keys:
+            out[k] = doms[0][k]
+            del doms[0][k];
+            for d in doms[1:]:
+                out[k] = np.concatenate((out[k],d[k]));
+                del d[k]
+    else:    
+        out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
+    del doms;
+
+    for k in out:
+        out[k] = out[k].astype('=f4');
+    if not keep_edges:
+        vprint('sorting rows...');
+        sort = flds_firstsort(out)
+        out = flds_sort(out,sort);
+    if not keep_xs:
+        out.pop('xs',None);
+        out.pop('ys',None);
+        out.pop('zs',None);
+        if return_array:
+            vprint('stuffing into array'.format(k));
+            keys = sorted(out.keys());
+            dt = list(zip(keys,['f4']*len(out)));
+            rout = np.zeros(out['x'].shape,dtype=dt);
+            for k in keys:
+                vprint('saving {}'.format(k));
+                rout[k] = out[k];
+            out=rout;
+    if first_sort and not keep_edges:
+        out = (out, sort);
+    return out;
+
+
 def read_flds(file, header, var, vprint,
               vector=True,keep_edges=False,
               sort=None,first_sort=False,
@@ -242,8 +351,8 @@ def read_flds(file, header, var, vprint,
                 d[l] = d[l][cut:];
             return d;
         doms[:] = [cutdom(d) for d in doms];
-    vprint('Stringing domains together.');
-    
+    vprint('Stringing domains together');
+    vprint('mempattern used is {}'.format(mempattern));
     if mempattern == 'memsave_1':
         keys = doms[0].keys();
         for k in keys:
