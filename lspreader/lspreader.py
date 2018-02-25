@@ -326,6 +326,7 @@ def read_flds(file, header, var, vprint,
     qs = [i[0] for i in header['quantities']];
     for i in range(header['domains']):
         iR, jR, kR = get_int(file, N=3);
+        vprint("iR,jR,kR = {}".format((iR,jR,kR)));
         #getting grid parameters (real coordinates)
         nI = get_int(file); Ip = get_float(file,N=nI, forcearray=True);
         nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
