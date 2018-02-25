@@ -522,7 +522,8 @@ def read(fname,**kw):
                 first_sort=first_sort,
                 sort=sort,
                 keep_xs=keep_xs,
-                return_array=return_array),
+                return_array=return_array,
+                mempattern=mempattern,),
             3: lambda: read_flds(
                 file,header,var, vprint,
                 keep_edges=keep_edges,
