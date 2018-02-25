@@ -388,7 +388,7 @@ def read_flds(file, header, var, vprint,
                 out[k] = np.concatenate((out[k],d[k]));
                 del d[k]
     elif re.match('^chunk_', mempattern):
-        keys = doms[0].keys();
+        keys = list(doms[0].keys());
         n = int(re.match('chunk_([0-9]+)',mempattern).group(1));
         vprint("dividing by {} chunks".format(n));
         cs = chunks(doms, n);
@@ -400,7 +400,7 @@ def read_flds(file, header, var, vprint,
                 con = (out[k],) + tuple((di[k] for di in ic ))
                 out[k] = np.concatenate(con)
                 for di in ic:
-                    del d[k];
+                    del di[k];
     else:
         out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
     del doms;
