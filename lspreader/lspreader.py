@@ -211,10 +211,10 @@ def read_flds_new(
         nK = get_int(file); zs = get_float(file,N=nK, forcearray=True);
         nAll=nI*nJ*nK;
         doms.append(dict(xs=xs,ys=ys,zs=zs,nAll=nAll,point=file.tell()));
-        if i % 10 == 0:
-            vprint("{:03}...".format(i));
+        if i % 100 == 0:
+            vprint("{:04}...".format(i));
         file.seek(nAll*4*len(qs)*size,1);
-    outsz = sum(nAlls*size);
+    outsz = sum([dom['nAll'] for dom in doms])*size;
     vprint("Allocating output. If this fails, you don't have enough memory!");
     vprint("outsz of {} ({})".format(outsz,hex(outsz)));
     out = { iq:np.zeros(outsz) for iq in qs+['x','y','z'] };
