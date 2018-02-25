@@ -6,7 +6,7 @@ import xdrlib as xdr;
 import re;
 import numpy as np;
 import gzip;
-from pys import test;
+from pys import test,chunks;
 import sys;
 if sys.version_info >= (3,0):
     strenc = lambda b: b.decode('latin1');
@@ -201,13 +201,26 @@ def read_flds_new(
     doms = [];
     qs = [i[0] for i in header['quantities']];
     #get global array size
+    I,J,K = [],[],[];
+    Is,Js,Ks = 0,0,0;
+    nbuffs= [];
     for i in range(header['domains']):
         #seek over indices
         iR, jR, kR = get_int(file, N=3);
         nI = get_int(file); file.seak(nI*4);
         nJ = get_int(file); file.seak(nJ*4);
         nK = get_int(file); file.seak(nK*4);
-        nAll = nI*nJ*nK;        
+        nbuffs.append(nI*nJ*nK);
+        I.append( (iR,nI) );
+        J.append( (jR,nJ) );
+        K.append( (kR,nK) );
+        if iR+nI > Is: Is = iR+nI;
+        if jR+nJ > Js: Js = jR+nJ;
+        if kR+nK > Ks: Ks = kR+nK;
+    
+    #finding dims
+    for i,_ in Is:
+        
     for i in range(header['domains']):
         iR, jR, kR = get_int(file, N=3);
         #getting grid parameters (real coordinates)
@@ -378,7 +391,21 @@ def read_flds(file, header, var, vprint,
                 vprint("processing domain {}".format(i));
                 out[k] = np.concatenate((out[k],d[k]));
                 del d[k]
-    else:    
+    elif re.match('^chunk_', mempattern):
+        keys = doms[0].keys();
+        n = int(re.match('chunk_([0-9]+)',mempattern).group(1));
+        vprint("dividing by {} chunks".format(n));
+        cs = chunks(doms, n);
+        for k in keys:
+            vprint("concatenating for quantity '{}'".format(k));
+            out[k] = [];
+            for i,ic in enumerate(cs):
+                vprint('processing chunk {} of {}'.format(i,n));
+                con = (out[k],) + tuple((di[k] for di in ic ))
+                out[k] = np.concatenate(con)
+                for di in ic:
+                    del d[k];
+    else:
         out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
     del doms;
 
@@ -522,7 +549,7 @@ def read(fname,**kw):
             return_array = test(kw, 'return_array');
             if test(kw,'mempattern'):
                 mempattern = kw['mempattern'];
-                if mempattern not in [None, 'memsave_1', 'memsave_2']:
+                if mempattern not in [None, 'memsave_1', 'memsave_2'] or re.match("^chunk_",mempattern):
                     print("warning: unrecognized mempattern {}, using default".format(
                         mempattern));
         readers = {
