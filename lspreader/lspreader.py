@@ -353,6 +353,7 @@ def read_flds(file, header, var, vprint,
         doms[:] = [cutdom(d) for d in doms];
     vprint('Stringing domains together');
     vprint('mempattern used is {}'.format(mempattern));
+    out=dict();
     if mempattern == 'memsave_1':
         keys = doms[0].keys();
         for k in keys:
