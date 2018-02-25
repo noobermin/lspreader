@@ -217,7 +217,7 @@ def read_flds_restricted(
         nAll = nI*nJ*nK;
         if plotlvl == 1:
             vprint('reading domain {} with dimensions {}x{}x{}={}.'.format(i,nI,nJ,nK,nAll));
-        elif (i+1)%plotlvl:
+        elif (i+1)%plotlvl==0:
             vprint("reading domain {}...".format(i+1));
         d={}
         d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
