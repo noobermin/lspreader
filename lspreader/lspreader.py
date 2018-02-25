@@ -182,7 +182,7 @@ def flds_sort(d,s):
         d[l] = np.squeeze(d[l]);
     return d;
 
-def read_flds_withrestrictions(
+def read_flds_restricted(
         file, header, var, vprint,
         lims=None,
         vector=True,keep_edges=False,
@@ -377,7 +377,7 @@ def read_flds_new(
     outi = 0;
     vprint("reading quantities {}".format(qs));
     for i,dom in enumerate(doms):
-        if (i+1)%100:
+        if (i+1) % plotlvl == 0:
             vprint("reading domain {:04}...".format(i+1));
         file.seek(dom['point']);
         nAll = dom['nAll'];
@@ -635,6 +635,8 @@ def read(fname,**kw):
     mempattern   -- Change the memory pattern used in order to try to save on memory.
                     Values can be "memsave_1" or "memsave_2"
     new_reader   -- Try the new field reader.
+    restrict     -- Set coordinate restrictions as a 6-tuple. You must specify all 
+                    dimension if you do this. This is an experimental reader.
     '''
     if test(kw,'gzip') and kw['gzip'] == 'guess':
         kw['gzip'] = re.search(r'\.gz$', fname) is not None;
@@ -681,6 +683,8 @@ def read(fname,**kw):
                 mempattern=None;    
             if test(kw,'new_reader'):
                 fldscall = read_flds_new;
+            elif test(kw, 'restrict'):
+                fldscall = lambda *arg, **kw: read_flds_restricted(*arg,lims=kw['restrict'],**kw)
         readers = {
             1: lambda: read_particles(file, header),
             2: lambda: fldscall(
