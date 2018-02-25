@@ -203,6 +203,7 @@ def read_flds_new(
     #get global array size
     I,J,K = [],[],[];
     Is,Js,Ks = 0,0,0;
+    Ips,Jps,Kps = [],[],[];
     nbuffs= [];
     for i in range(header['domains']):
         #seek over indices
@@ -210,13 +211,7 @@ def read_flds_new(
         nI = get_int(file); file.seak(nI*4);
         nJ = get_int(file); file.seak(nJ*4);
         nK = get_int(file); file.seak(nK*4);
-        nbuffs.append(nI*nJ*nK);
-        I.append( (iR,nI) );
-        J.append( (jR,nJ) );
-        K.append( (kR,nK) );
-        if iR+nI > Is: Is = iR+nI;
-        if jR+nJ > Js: Js = jR+nJ;
-        if kR+nK > Ks: Ks = kR+nK;        
+        nAlls.append(nI*nJ*nK);
     for i in range(header['domains']):
         iR, jR, kR = get_int(file, N=3);
         #getting grid parameters (real coordinates)
@@ -326,7 +321,6 @@ def read_flds(file, header, var, vprint,
     qs = [i[0] for i in header['quantities']];
     for i in range(header['domains']):
         iR, jR, kR = get_int(file, N=3);
-        vprint("iR,jR,kR = {}".format((iR,jR,kR)));
         #getting grid parameters (real coordinates)
         nI = get_int(file); Ip = get_float(file,N=nI, forcearray=True);
         nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
@@ -391,15 +385,16 @@ def read_flds(file, header, var, vprint,
     elif re.match('^chunk_', mempattern):
         keys = list(doms[0].keys());
         n = int(re.match('chunk_([0-9]+)',mempattern).group(1));
-        vprint("dividing by {} chunks".format(n));
+        vprint("dividing by {}-sized chunks".format(n));
         cs = chunks(doms, n);
         for k in keys:
             vprint("concatenating for quantity '{}'".format(k));
             out[k] = [];
             for i,ic in enumerate(cs):
-                vprint('processing chunk {} of {}'.format(i,n));
+                vprint('processing chunk {} of {}'.format(i,len(cs)));
                 con = (out[k],) + tuple((di[k] for di in ic ))
                 out[k] = np.concatenate(con)
+                del con;
                 for di in ic:
                     del di[k];
     else:
