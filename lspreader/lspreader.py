@@ -187,6 +187,7 @@ def read_flds_new(
         file, header, var, vprint,
         vector=True,keep_edges=False,
         return_array=False,**kw):
+    vprint("!!Using new flds reader");
     if vector:
         size=3;
         readin = set();
@@ -510,6 +511,8 @@ def read(fname,**kw):
                 if mempattern not in [None, 'memsave_1', 'memsave_2'] or re.match("^chunk_",mempattern):
                     print("warning: unrecognized mempattern {}, using default".format(
                         mempattern));
+            else:
+                mempattern=None;    
             if test(kw,'new_reader'):
                 fldscall = read_flds_new;
         readers = {
