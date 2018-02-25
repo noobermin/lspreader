@@ -355,13 +355,13 @@ def read_flds(file, header, var, vprint,
     vprint('mempattern used is {}'.format(mempattern));
     out=dict();
     if mempattern == 'memsave_1':
-        keys = doms[0].keys();
+        keys = list(doms[0].keys());
         for k in keys:
             out[k] = np.concatenate([d[k] for d in doms]);
             for d in doms:
                 del d[k];
     elif mempattern == 'memsave_2':
-        keys = doms[0].keys();
+        keys = list(doms[0].keys());
         for k in keys:
             out[k] = doms[0][k]
             del doms[0][k];
