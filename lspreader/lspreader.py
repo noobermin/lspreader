@@ -186,7 +186,7 @@ def read_flds_restricted(
         file, header, var, vprint,
         lims=None,
         vector=True,keep_edges=False,
-        mempattern=None,
+        mempattern='fast',
         return_array=False,
         plotlvl=100,
         **kw):
@@ -218,7 +218,7 @@ def read_flds_restricted(
         if plotlvl == 1:
             vprint('reading domain {} with dimensions {}x{}x{}={}.'.format(i,nI,nJ,nK,nAll));
         elif (i+1)%plotlvl==0:
-            vprint("reading domain {}...".format(i+1));
+            vprint("reading domain {:04}...".format(i+1));
         d={}
         d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
         d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
@@ -430,7 +430,7 @@ def read_flds(file, header, var, vprint,
               sort=None,first_sort=False,
               keep_xs=False,
               return_array=False,
-              mempattern=None):
+              mempattern='fast'):
     if vector:
         size=3;
         readin = set();
@@ -677,13 +677,14 @@ def read(fname,**kw):
                 sort = None;
             keep_xs = test(kw, 'keep_xs');
             return_array = test(kw, 'return_array');
+            mempattern='fast';
             if test(kw,'mempattern'):
                 mempattern = kw['mempattern'];
                 if mempattern not in [None, 'memsave_1', 'memsave_2'] or re.match("^chunk_",mempattern):
                     print("warning: unrecognized mempattern {}, using default".format(
                         mempattern));
-            else:
-                mempattern=None;    
+                if mempattern is None:
+                    mempattern = 'fast';
             if test(kw,'new_reader'):
                 fldscall = read_flds_new;
             elif test(kw, 'restrict'):
