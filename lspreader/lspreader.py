@@ -200,6 +200,14 @@ def read_flds_new(
         readin = set(var);
     doms = [];
     qs = [i[0] for i in header['quantities']];
+    #get global array size
+    for i in range(header['domains']):
+        #seek over indices
+        iR, jR, kR = get_int(file, N=3);
+        nI = get_int(file); file.seak(nI*4);
+        nJ = get_int(file); file.seak(nJ*4);
+        nK = get_int(file); file.seak(nK*4);
+        nAll = nI*nJ*nK;        
     for i in range(header['domains']):
         iR, jR, kR = get_int(file, N=3);
         #getting grid parameters (real coordinates)
@@ -363,9 +371,11 @@ def read_flds(file, header, var, vprint,
     elif mempattern == 'memsave_2':
         keys = list(doms[0].keys());
         for k in keys:
+            vprint("filtering for quantity '{}'".format(k));
             out[k] = doms[0][k]
             del doms[0][k];
-            for d in doms[1:]:
+            for i,d in enumerate(doms[1:]):
+                vprint("processing domain {}".format(i));
                 out[k] = np.concatenate((out[k],d[k]));
                 del d[k]
     else:    
