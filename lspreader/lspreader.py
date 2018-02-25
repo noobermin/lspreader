@@ -335,6 +335,7 @@ def read_flds_new(
         vector=True,keep_edges=False,
         return_array=False,**kw):
     vprint("!!Using new flds reader");
+    plotlvl=100;
     if vector:
         size=3;
         readin = set();
@@ -358,7 +359,7 @@ def read_flds_new(
         nK = get_int(file); zs = get_float(file,N=nK, forcearray=True);
         nAll=nI*nJ*nK;
         doms.append(dict(xs=xs,ys=ys,zs=zs,nAll=nAll,point=file.tell()));
-        if (i+1) % 100 == 0:
+        if (i+1) % plotlvl == 0:
             vprint("{:04}...".format(i+1));
         file.seek(nAll*4*len(qs)*size,1);
     outsz = sum([dom['nAll'] for dom in doms])*size;
@@ -369,19 +370,22 @@ def read_flds_new(
                 for iq in qs+[''] for di in ['x','y','z'] };
     else:
         out = { iq:np.zeros(outsz) for iq in qs+['x','y','z'] };
+    xs=np.concatenate([dom['xs'] for dom in doms]).astype("=f4");
+    ys=np.concatenate([dom['ys'] for dom in doms]).astype("=f4");
+    zs=np.concatenate([dom['zs'] for dom in doms]).astype("=f4");
     #position in output
     outi = 0;
+    vprint("reading quantities {}".format(quantities));
     for i,dom in enumerate(doms):
+        if (i+1)%100:
+            vprint("reading domain {:04}...".format(i+1));
         file.seek(dom['point']);
         nAll = dom['nAll'];
         outend = outi+nAll;
-        vprint('reading domain {}'.format(i));
         for quantity in qs:
             if quantity not in readin:
-                vprint('skipping {}'.format(quantity));
                 file.seek(nAll*4*size,1);
             else:
-                vprint('reading {}'.format(quantity));
                 data = get_float(file,N=nAll*size);
                 if size == 1:
                     out[quantity][outi:outi+nAll] = data;
@@ -396,10 +400,8 @@ def read_flds_new(
         out['y'][outi:outend] = Y.ravel();
         out['z'][outi:outend] = Z.ravel();
         del X,Y,Z;
+        del dom['zs'],dom['ys'],dom['xs'];
         outi=outend;
-    xs=np.concatenate([dom['xs'] for dom in doms]).astype("=f4")
-    ys=np.concatenate([dom['ys'] for dom in doms]).astype("=f4")
-    zs=np.concatenate([dom['zs'] for dom in doms]).astype("=f4")
     del doms,dom;
     for k in out:
         out[k] = out[k].astype('=f4');
