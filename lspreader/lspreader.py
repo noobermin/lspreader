@@ -375,7 +375,7 @@ def read_flds_new(
     zs=np.concatenate([dom['zs'] for dom in doms]).astype("=f4");
     #position in output
     outi = 0;
-    vprint("reading quantities {}".format(qs));
+    vprint("reading quantities {}".format([q for q in qs if q in readin]));
     for i,dom in enumerate(doms):
         if (i+1) % plotlvl == 0:
             vprint("reading domain {:04}...".format(i+1));
@@ -684,7 +684,7 @@ def read(fname,**kw):
             if test(kw,'new_reader'):
                 fldscall = read_flds_new;
             elif test(kw, 'restrict'):
-                fldscall = lambda *arg, **kw: read_flds_restricted(*arg,lims=kw['restrict'],**kw)
+                fldscall = lambda *arg, **kw2: read_flds_restricted(*arg,lims=kw['restrict'],**kw2)
         readers = {
             1: lambda: read_particles(file, header),
             2: lambda: fldscall(
@@ -707,9 +707,7 @@ def read(fname,**kw):
             6: lambda: read_movie(file, header),
             10:lambda: read_pext(file,header)
         };
-        
-        try:
-            d = readers[header['dump_type']]();
-        except KeyError:
+        if header['dump_type'] not in readers:
             raise NotImplementedError("Other file types not implemented yet!");
+        d = readers[header['dump_type']]();
     return d;
