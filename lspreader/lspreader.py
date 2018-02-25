@@ -216,11 +216,7 @@ def read_flds_new(
         K.append( (kR,nK) );
         if iR+nI > Is: Is = iR+nI;
         if jR+nJ > Js: Js = jR+nJ;
-        if kR+nK > Ks: Ks = kR+nK;
-    
-    #finding dims
-    for i,_ in Is:
-        
+        if kR+nK > Ks: Ks = kR+nK;        
     for i in range(header['domains']):
         iR, jR, kR = get_int(file, N=3);
         #getting grid parameters (real coordinates)
