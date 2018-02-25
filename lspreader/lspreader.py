@@ -374,6 +374,7 @@ def read_flds_new(
     for i,dom in enumerate(doms):
         file.seek(dom['point']);
         nAll = dom['nAll'];
+        outend = outi+nAll;
         vprint('reading domain {}'.format(i));
         for quantity in qs:
             if quantity not in readin:
@@ -383,19 +384,19 @@ def read_flds_new(
                 vprint('reading {}'.format(quantity));
                 data = get_float(file,N=nAll*size);
                 if size == 1:
-                    out[quantity][outi:nAll] = data;
+                    out[quantity][outi:outi+nAll] = data;
                 else:
                     data = data.reshape(nAll,3).T;
-                    out[quantity+'x'][outi:nAll] = data[0];
-                    out[quantity+'y'][outi:nAll] = data[1];
-                    out[quantity+'z'][outi:nAll] = data[2];
+                    out[quantity+'x'][outi:outend] = data[0];
+                    out[quantity+'y'][outi:outend] = data[1];
+                    out[quantity+'z'][outi:outend] = data[2];
                 del data;
         Z,Y,X = np.meshgrid(dom['zs'],dom['ys'],dom['xs']);
-        out['x'][outi:nAll] = X.ravel();
-        out['y'][outi:nAll] = Y.ravel();
-        out['z'][outi:nAll] = Z.ravel();
+        out['x'][outi:outend] = X.ravel();
+        out['y'][outi:outend] = Y.ravel();
+        out['z'][outi:outend] = Z.ravel();
         del X,Y,Z;
-        outi+=nAll;
+        outi=outend;
     xs=np.concatenate([dom['xs'] for dom in doms]).astype("=f4")
     ys=np.concatenate([dom['ys'] for dom in doms]).astype("=f4")
     zs=np.concatenate([dom['zs'] for dom in doms]).astype("=f4")
