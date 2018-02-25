@@ -217,13 +217,21 @@ def read_flds_withrestrictions(
         d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
         d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
         d['z'], d['y'], d['x'] = d['z'].ravel(), d['y'].ravel(), d['x'].ravel();
-        good = xlims[0] <= d['x'] <= xlims[1];
-        good&= ylims[0] <= d['y'] <= ylims[1];
-        good&= zlims[0] <= d['z'] <= zlims[1];
+        good =np.logical_and(xlims[0] <= d['x'],d['x']<= xlims[1]);
+        good&=np.logical_and(ylims[0] <= d['y'],d['y']<= ylims[1]);
+        good&=np.logical_and(zlims[0] <= d['z'],d['z']<= zlims[1]);
+
         d['x'] = d['x'][good];
         d['y'] = d['y'][good];
         d['z'] = d['z'][good];
+        
         d['xs'] = d['xs'][xlims[0] <= d['xs']];
+        d['xs'] = d['xs'][xlims[1] >= d['xs']];
+        d['ys'] = d['ys'][ylims[0] <= d['ys']];
+        d['ys'] = d['ys'][ylims[1] >= d['ys']];
+        d['zs'] = d['zs'][zlims[0] <= d['zs']];
+        d['zs'] = d['zs'][zlims[1] >= d['zs']];
+        
         for quantity in qs:
             if quantity not in readin:
                 vprint('skipping {}'.format(quantity));
@@ -382,7 +390,7 @@ def read_flds_new(
                     out[quantity+'y'][outi:nAll] = data[1];
                     out[quantity+'z'][outi:nAll] = data[2];
                 del data;
-        Z,Y,X = np.meshgrid(doms['zs'],doms['ys'],doms['xs']);
+        Z,Y,X = np.meshgrid(dom['zs'],dom['ys'],dom['xs']);
         out['x'][outi:nAll] = X.ravel();
         out['y'][outi:nAll] = Y.ravel();
         out['z'][outi:nAll] = Z.ravel();
