@@ -375,7 +375,7 @@ def read_flds_new(
     zs=np.concatenate([dom['zs'] for dom in doms]).astype("=f4");
     #position in output
     outi = 0;
-    vprint("reading quantities {}".format(quantities));
+    vprint("reading quantities {}".format(qs));
     for i,dom in enumerate(doms):
         if (i+1)%100:
             vprint("reading domain {:04}...".format(i+1));
@@ -614,6 +614,8 @@ def read(fname,**kw):
                  in the passed file, useful to attempting to read semicorrupted
                  files.
     gzip     --  Read as a gzip file.
+    nobuffer --  Turn off file buffering. Default is on. This will not work with gzip
+                 of course.
 
     flds/sclr Specific Arguments:
     -----------------------------
@@ -636,7 +638,14 @@ def read(fname,**kw):
     '''
     if test(kw,'gzip') and kw['gzip'] == 'guess':
         kw['gzip'] = re.search(r'\.gz$', fname) is not None;
-    openf = gzip.open if test(kw, 'gzip') else open;
+    if test(kw,'gzip'):
+        openf = gzip.open;
+    else:
+        print("not buffering");
+        if test(kw,'nobuffer'):
+            openf = lambda fname,mode: open(fname,mode,buffering=0)
+        else:
+            openf=open;
     with openf(fname,'rb') as file:
         if test(kw,'override'):
             dump, start = kw['override'];
