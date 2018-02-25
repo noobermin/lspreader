@@ -186,7 +186,10 @@ def read_flds_restricted(
         file, header, var, vprint,
         lims=None,
         vector=True,keep_edges=False,
-        return_array=False,**kw):
+        mempattern=None,
+        return_array=False,
+        plotlvl=100,
+        **kw):
     vprint("!!Reading with restrictions");
     vprint("Possible issues with irregularly strided arrays.");
     xlims = lims[0:2];
@@ -212,7 +215,10 @@ def read_flds_restricted(
         nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
         nK = get_int(file); Kp = get_float(file,N=nK, forcearray=True);
         nAll = nI*nJ*nK;
-        vprint('reading domain with dimensions {}x{}x{}={}.'.format(nI,nJ,nK,nAll));
+        if plotlvl == 1:
+            vprint('reading domain {} with dimensions {}x{}x{}={}.'.format(i,nI,nJ,nK,nAll));
+        elif (i+1)%plotlvl:
+            vprint("reading domain {}...".format(i+1));
         d={}
         d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
         d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
@@ -234,10 +240,8 @@ def read_flds_restricted(
         
         for quantity in qs:
             if quantity not in readin:
-                vprint('skipping {}'.format(quantity));
                 file.seek(nAll*4*size,1);
             else:
-                vprint('reading {}'.format(quantity));
                 data = get_float(file,N=nAll*size);
                 if size==3:
                     data=data.reshape(nAll,3).T;
@@ -268,7 +272,7 @@ def read_flds_restricted(
                 d[l] = d[l][cut:];
             return d;
         doms[:] = [cutdom(d) for d in doms];
-    vprint('Stringing domains together');
+    vprint('stringing domains together');
     vprint('mempattern used is {}'.format(mempattern));
     out=dict();
     if mempattern == 'memsave_1':
@@ -305,7 +309,6 @@ def read_flds_restricted(
     else:
         out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
     del doms;
-
     for k in out:
         out[k] = out[k].astype('=f4');
     if not keep_edges:
