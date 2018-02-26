@@ -399,6 +399,7 @@ def read_flds_restricted(
                   if k not in dims ] if len(doms) > 0 else None;
         mins = [ min([d[l].min() for d in doms])
                  for l in dims ];
+        print(mins);
         def cutdom(d):
             ldim = [len(d[l]) for l in dims];
             cuts = [ np.isclose(d[l][0], smin)
