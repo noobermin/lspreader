@@ -252,7 +252,7 @@ def read_flds_unstructured(
         vector=True,
         mempattern='fast',
         return_array=False,
-        plotlvl=100,
+        loglvl=100,
         **kw):
     vprint("!!Reading unstructured data");
     xlims = lims[0:2];
@@ -278,9 +278,9 @@ def read_flds_unstructured(
         nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
         nK = get_int(file); Kp = get_float(file,N=nK, forcearray=True);
         nAll = nI*nJ*nK;
-        if plotlvl == 1:
+        if loglvl == 1:
             vprint('reading domain {} with dimensions {}x{}x{}={}.'.format(i,nI,nJ,nK,nAll));
-        elif (i+1)%plotlvl==0:
+        elif (i+1)%loglvl==0:
             vprint("reading domain {:04}...".format(i+1));
         d={}
         d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
@@ -328,7 +328,7 @@ def read_flds_restricted(
         return_array=False,
         argsort = None,
         first_sort=False,
-        plotlvl=100,
+        loglvl=100,
         **kw):
     vprint("!!Reading with restrictions");
     vprint("Possible issues with irregularly strided arrays.");
@@ -355,9 +355,9 @@ def read_flds_restricted(
         nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
         nK = get_int(file); Kp = get_float(file,N=nK, forcearray=True);
         nAll = nI*nJ*nK;
-        if plotlvl == 1:
+        if loglvl == 1:
             vprint('reading domain {} with dimensions {}x{}x{}={}.'.format(i,nI,nJ,nK,nAll));
-        elif (i+1)%plotlvl==0:
+        elif (i+1)%loglvl==0:
             vprint("reading domain {:04}...".format(i+1));
         d={}
         d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
@@ -442,7 +442,7 @@ def read_flds_new(
         vector=True,keep_edges=False,
         return_array=False,**kw):
     vprint("!!Using new flds reader");
-    plotlvl=100;
+    loglvl=100;
     if vector:
         size=3;
         readin = set();
@@ -466,7 +466,7 @@ def read_flds_new(
         nK = get_int(file); zs = get_float(file,N=nK, forcearray=True);
         nAll=nI*nJ*nK;
         doms.append(dict(xs=xs,ys=ys,zs=zs,nAll=nAll,point=file.tell()));
-        if (i+1) % plotlvl == 0:
+        if (i+1) % loglvl == 0:
             vprint("{:04}...".format(i+1));
         file.seek(nAll*4*len(qs)*size,1);
     outsz = sum([dom['nAll'] for dom in doms])*size;
@@ -484,7 +484,7 @@ def read_flds_new(
     outi = 0;
     vprint("reading quantities {}".format([q for q in qs if q in readin]));
     for i,dom in enumerate(doms):
-        if (i+1) % plotlvl == 0:
+        if (i+1) % loglvl == 0:
             vprint("reading domain {:04}...".format(i+1));
         file.seek(dom['point']);
         nAll = dom['nAll'];
@@ -534,6 +534,7 @@ def read_flds(file, header, var, vprint,
               argsort=None,first_sort=False,
               keep_xs=False,
               return_array=False,
+              loglvl=100,
               mempattern='fast'):
     if vector:
         size=3;
@@ -548,6 +549,7 @@ def read_flds(file, header, var, vprint,
         readin = set(var);
     doms = [];
     qs = [i[0] for i in header['quantities']];
+    vprint("reading quantities {}".format([q for q in qs if q in readin]));
     for i in range(header['domains']):
         iR, jR, kR = get_int(file, N=3);
         #getting grid parameters (real coordinates)
@@ -555,17 +557,19 @@ def read_flds(file, header, var, vprint,
         nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
         nK = get_int(file); Kp = get_float(file,N=nK, forcearray=True);
         nAll = nI*nJ*nK;
-        vprint('reading domain with dimensions {}x{}x{}={}.'.format(nI,nJ,nK,nAll));
+        if loglvl < 2:
+            vprint('reading domain {} with dimensions {}x{}x{}={}.'.format(
+                i,nI,nJ,nK,nAll));
+        elif (i+1)%loglvl==0:
+            vprint('reading domain {:04}...'.format(i));
         d={}
         d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
         d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
         d['z'], d['y'], d['x'] = d['z'].ravel(), d['y'].ravel(), d['x'].ravel();
         for quantity in qs:
             if quantity not in readin:
-                vprint('skipping {}'.format(quantity));
                 file.seek(nAll*4*size,1);
             else:
-                vprint('reading {}'.format(quantity));
                 d[quantity] = get_float(file,N=nAll*size);
                 if size==3:
                     data=d[quantity].reshape(nAll,3).T;
@@ -592,7 +596,7 @@ def read_flds(file, header, var, vprint,
                 d[l] = d[l][cut:];
             return d;
         doms[:] = [cutdom(d) for d in doms];
-    vprint('Stringing domains together');
+    vprint('stringing domains together');
     vprint('mempattern used is {}'.format(mempattern));
     out=flds_concat_doms(doms,vprint,mempattern=mempattern);
     del doms;
