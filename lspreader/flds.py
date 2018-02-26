@@ -35,7 +35,7 @@ def vector_norm(d,k):
 def read_indexed(i,flds=None,sclr=None,
                  gzip='guess', dir='.', vector_norms=True,
                  keep_xs=False,gettime=False,
-                 vprint=True):
+                 vprint=None):
     '''
     A smart indexing reader that reads files by names. Looks for files
     like "<dir>/flds<i>.p4<compression>" where dir and the index are
@@ -68,6 +68,9 @@ def read_indexed(i,flds=None,sclr=None,
     keep_xs      -- Keep the edges. By default, False.
     gettime      -- Get the timestamp.
     '''
+    def _v(s):
+        print('noobhack: {}'.format(s));
+    vprint=_v;
     fldsp4  = '{}/flds{}.p4'.format(dir,i);
     sclrp4  = '{}/sclr{}.p4'.format(dir,i);
     fldsgz  = fldsp4 + '.gz';
