@@ -182,6 +182,120 @@ def flds_sort(d,s):
         d[l] = np.squeeze(d[l]);
     return d;
 
+def flds_concat_doms(doms,vprint,mempattern='fast'):
+    vprint('stringing domains together');
+    vprint('mempattern used is {}'.format(mempattern));
+    out=dict();
+    if mempattern == 'memsave_1':
+        keys = list(doms[0].keys());
+        for k in keys:
+            out[k] = np.concatenate([d[k] for d in doms]);
+            for d in doms:
+                del d[k];
+    elif mempattern == 'memsave_2':
+        keys = list(doms[0].keys());
+        for k in keys:
+            vprint("filtering for quantity '{}'".format(k));
+            out[k] = doms[0][k]
+            del doms[0][k];
+            for i,d in enumerate(doms[1:]):
+                vprint("processing domain {}".format(i));
+                out[k] = np.concatenate((out[k],d[k]));
+                del d[k]
+    elif re.match('^chunk_', mempattern):
+        keys = list(doms[0].keys());
+        n = int(re.match('chunk_([0-9]+)',mempattern).group(1));
+        vprint("dividing by {}-sized chunks".format(n));
+        cs = chunks(doms, n);
+        for k in keys:
+            vprint("concatenating for quantity '{}'".format(k));
+            out[k] = [];
+            for i,ic in enumerate(cs):
+                vprint('processing chunk {} of {}'.format(i,len(cs)-1));
+                con = (out[k],) + tuple((di[k] for di in ic ))
+                out[k] = np.concatenate(con)
+                del con;
+                for di in ic:
+                    del di[k];
+    else:
+        out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
+    return out;
+        
+
+def read_flds_unstructured(
+        file, header, var, vprint,
+        lims=None,
+        vector=True,
+        mempattern='fast',
+        return_array=False,
+        plotlvl=100,
+        **kw):
+    vprint("!!Reading unstructured data");
+    xlims = lims[0:2];
+    ylims = lims[2:4];
+    zlims = lims[4:6];
+    if vector:
+        size=3;
+        readin = set();
+        for i in var:#we assume none of the fields end in x
+            if i[-1] == 'x' or i[-1] == 'y' or i[-1] == 'z':
+                readin.add(i[:-1]);
+            else:
+                readin.add(i);
+    else:
+        size=1;
+        readin = set(var);
+    doms = [];
+    qs = [i[0] for i in header['quantities']];
+    for i in range(header['domains']):
+        iR, jR, kR = get_int(file, N=3);
+        #getting grid parameters (real coordinates)
+        nI = get_int(file); Ip = get_float(file,N=nI, forcearray=True);
+        nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
+        nK = get_int(file); Kp = get_float(file,N=nK, forcearray=True);
+        nAll = nI*nJ*nK;
+        if plotlvl == 1:
+            vprint('reading domain {} with dimensions {}x{}x{}={}.'.format(i,nI,nJ,nK,nAll));
+        elif (i+1)%plotlvl==0:
+            vprint("reading domain {:04}...".format(i+1));
+        d={}
+        d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
+        d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
+        d['z'], d['y'], d['x'] = d['z'].ravel(), d['y'].ravel(), d['x'].ravel();
+        good =np.logical_and(xlims[0] <= d['x'],d['x']<= xlims[1]);
+        good&=np.logical_and(ylims[0] <= d['y'],d['y']<= ylims[1]);
+        good&=np.logical_and(zlims[0] <= d['z'],d['z']<= zlims[1]);
+
+        d['x'] = d['x'][good];
+        d['y'] = d['y'][good];
+        d['z'] = d['z'][good];
+        
+        d['xs'] = d['xs'][xlims[0] <= d['xs']];
+        d['xs'] = d['xs'][xlims[1] >= d['xs']];
+        d['ys'] = d['ys'][ylims[0] <= d['ys']];
+        d['ys'] = d['ys'][ylims[1] >= d['ys']];
+        d['zs'] = d['zs'][zlims[0] <= d['zs']];
+        d['zs'] = d['zs'][zlims[1] >= d['zs']];
+        
+        for quantity in qs:
+            if quantity not in readin:
+                file.seek(nAll*4*size,1);
+            else:
+                data = get_float(file,N=nAll*size);
+                if size==3:
+                    data=data.reshape(nAll,3).T;
+                    d[quantity+'x'] = data[0][good]
+                    d[quantity+'y'] = data[1][good]
+                    d[quantity+'z'] = data[2][good]
+                else:
+                    d[quantity] = data[good];
+                del data
+        doms.append(d);
+    vprint('stringing domains together');
+    vprint('mempattern used is {}'.format(mempattern));
+    flds_concat_doms(doms, vprint, mempattern=mempattern);
+        
+
 def read_flds_restricted(
         file, header, var, vprint,
         lims=None,
@@ -274,40 +388,7 @@ def read_flds_restricted(
         doms[:] = [cutdom(d) for d in doms];
     vprint('stringing domains together');
     vprint('mempattern used is {}'.format(mempattern));
-    out=dict();
-    if mempattern == 'memsave_1':
-        keys = list(doms[0].keys());
-        for k in keys:
-            out[k] = np.concatenate([d[k] for d in doms]);
-            for d in doms:
-                del d[k];
-    elif mempattern == 'memsave_2':
-        keys = list(doms[0].keys());
-        for k in keys:
-            vprint("filtering for quantity '{}'".format(k));
-            out[k] = doms[0][k]
-            del doms[0][k];
-            for i,d in enumerate(doms[1:]):
-                vprint("processing domain {}".format(i));
-                out[k] = np.concatenate((out[k],d[k]));
-                del d[k]
-    elif re.match('^chunk_', mempattern):
-        keys = list(doms[0].keys());
-        n = int(re.match('chunk_([0-9]+)',mempattern).group(1));
-        vprint("dividing by {}-sized chunks".format(n));
-        cs = chunks(doms, n);
-        for k in keys:
-            vprint("concatenating for quantity '{}'".format(k));
-            out[k] = [];
-            for i,ic in enumerate(cs):
-                vprint('processing chunk {} of {}'.format(i,len(cs)-1));
-                con = (out[k],) + tuple((di[k] for di in ic ))
-                out[k] = np.concatenate(con)
-                del con;
-                for di in ic:
-                    del di[k];
-    else:
-        out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
+    out = flds_concat_doms(doms,vprint,mempattern=mempattern)
     del doms;
     for k in out:
         out[k] = out[k].astype('=f4');
@@ -315,19 +396,16 @@ def read_flds_restricted(
         vprint('sorting rows...');
         sort = flds_firstsort(out)
         out = flds_sort(out,sort);
-    if not keep_xs:
-        out.pop('xs',None);
-        out.pop('ys',None);
-        out.pop('zs',None);
-        if return_array:
-            vprint('stuffing into array'.format(k));
-            keys = sorted(out.keys());
-            dt = list(zip(keys,['f4']*len(out)));
-            rout = np.zeros(out['x'].shape,dtype=dt);
-            for k in keys:
-                vprint('saving {}'.format(k));
-                rout[k] = out[k];
-            out=rout;
+    del out['xs'], out['ys'], out['zs']:
+    if return_array:
+        vprint('stuffing into array'.format(k));
+        keys = sorted(out.keys());
+        dt = list(zip(keys,['f4']*len(out)));
+        rout = np.zeros(out['x'].shape,dtype=dt);
+        for k in keys:
+            vprint('saving {}'.format(k));
+            rout[k] = out[k];
+        out=rout;
     if first_sort and not keep_edges:
         out = (out, sort);
     return out;
