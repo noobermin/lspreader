@@ -69,7 +69,7 @@ def read_indexed(i,flds=None,sclr=None,
     gettime      -- Get the timestamp.
     '''
     def _v(s):
-        print('noobhack: {}'.format(s));
+        print('noobhack {:04}: {}'.format(i,s));
     vprint=_v;
     fldsp4  = '{}/flds{}.p4'.format(dir,i);
     sclrp4  = '{}/sclr{}.p4'.format(dir,i);
