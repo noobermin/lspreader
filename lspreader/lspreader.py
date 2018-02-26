@@ -743,7 +743,7 @@ def read(fname,**kw):
                 var=[i[0] for i in header['quantities']];
             else:
                 var=kw['var'];
-            keep_edges = test(kw, 'keep_edges');
+            keep_edges = True;#test(kw, 'keep_edges');
             first_sort = test(kw, 'first_sort');
             if test(kw,'argsort'):
                 argsort = kw['argsort']
