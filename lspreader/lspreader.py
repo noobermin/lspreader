@@ -396,7 +396,7 @@ def read_flds_restricted(
         vprint('sorting rows...');
         sort = flds_firstsort(out)
         out = flds_sort(out,sort);
-    del out['xs'], out['ys'], out['zs']:
+    del out['xs'], out['ys'], out['zs'];
     if return_array:
         vprint('stuffing into array'.format(k));
         keys = sorted(out.keys());
