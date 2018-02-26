@@ -152,18 +152,28 @@ def get_header(file,**kw):
     return header;
 
 
+def flds_argsort(d):
+    '''
+    Perform a lexsort to make a square array.
+    '''
+    return np.lexsort((d['z'],d['y'],d['x']));
+
+def flds_shape(xs=None,ys=None,zs=None,d=None):
+    '''
+    Figure shape. Only works for square, structured data
+    '''
+    if xs is ys is zs is None:
+        xs,ys,zs = d['xs'],d['ys'],d['zs']
+    return [len(np.unique(i)) for i in [xs,ys,zs]];
+
 def flds_firstsort(d,xs=None,ys=None,zs=None):
     '''
     Perform a lexsort and return the sort indices and shape as a tuple.
     '''
-    if xs is None: xs = d['xs'];
-    if ys is None: ys = d['ys'];
-    if zs is None: zs = d['zs']; 
-    shape = [ len( np.unique(i) )
-              for i in [xs, ys, zs] ];
-    si = np.lexsort((d['z'],d['y'],d['x']));
-    return si,shape;
-def flds_sort(d,s):
+    return flds_argsort(d), flds_shape(d=d,xs=xs,ys=ys,zs=zs)
+
+
+def flds_sort(d,s,shape=None):
     '''
     Sort based on position. Sort with s as a tuple of the sort
     indices and shape from first sort.
@@ -176,13 +186,27 @@ def flds_sort(d,s):
     '''
     labels = [ key for key in d.keys()
                if key not in ['t', 'xs', 'ys', 'zs', 'fd', 'sd'] ];
-    si,shape = s;
+    if shape is None:
+        si,shape = s;
+    else:
+        si=s;
     for l in labels:
         d[l] = d[l][si].reshape(shape);
         d[l] = np.squeeze(d[l]);
     return d;
 
 def flds_concat_doms(doms,vprint,mempattern='fast'):
+    '''
+    Concatenate domains. Includes other memory patterns that probably
+    don't really help if I'm honest.
+
+    Parameters:
+    -----------
+
+    doms       -- domains
+    vprint     -- vprinter, required
+    mempattern -- memory pattern
+    '''
     vprint('stringing domains together');
     vprint('mempattern used is {}'.format(mempattern));
     out=dict();
@@ -302,6 +326,8 @@ def read_flds_restricted(
         vector=True,keep_edges=False,
         mempattern='fast',
         return_array=False,
+        argsort = None,
+        first_sort=False,
         plotlvl=100,
         **kw):
     vprint("!!Reading with restrictions");
@@ -487,8 +513,8 @@ def read_flds_new(
     for k in out:
         out[k] = out[k].astype('=f4');
     vprint('sorting rows, time this');
-    sort = flds_firstsort(out,xs=xs,ys=ys,zs=zs)
-    out = flds_sort(out,sort);
+    argsort = flds_firstsort(out,xs=xs,ys=ys,zs=zs)
+    out = flds_sort(out,argsort);
     if return_array:
         vprint('stuffing into array'.format(k));
         keys = sorted(out.keys());
@@ -505,7 +531,7 @@ def read_flds_new(
 
 def read_flds(file, header, var, vprint,
               vector=True,keep_edges=False,
-              sort=None,first_sort=False,
+              argsort=None,first_sort=False,
               keep_xs=False,
               return_array=False,
               mempattern='fast'):
@@ -568,48 +594,14 @@ def read_flds(file, header, var, vprint,
         doms[:] = [cutdom(d) for d in doms];
     vprint('Stringing domains together');
     vprint('mempattern used is {}'.format(mempattern));
-    out=dict();
-    if mempattern == 'memsave_1':
-        keys = list(doms[0].keys());
-        for k in keys:
-            out[k] = np.concatenate([d[k] for d in doms]);
-            for d in doms:
-                del d[k];
-    elif mempattern == 'memsave_2':
-        keys = list(doms[0].keys());
-        for k in keys:
-            vprint("filtering for quantity '{}'".format(k));
-            out[k] = doms[0][k]
-            del doms[0][k];
-            for i,d in enumerate(doms[1:]):
-                vprint("processing domain {}".format(i));
-                out[k] = np.concatenate((out[k],d[k]));
-                del d[k]
-    elif re.match('^chunk_', mempattern):
-        keys = list(doms[0].keys());
-        n = int(re.match('chunk_([0-9]+)',mempattern).group(1));
-        vprint("dividing by {}-sized chunks".format(n));
-        cs = chunks(doms, n);
-        for k in keys:
-            vprint("concatenating for quantity '{}'".format(k));
-            out[k] = [];
-            for i,ic in enumerate(cs):
-                vprint('processing chunk {} of {}'.format(i,len(cs)-1));
-                con = (out[k],) + tuple((di[k] for di in ic ))
-                out[k] = np.concatenate(con)
-                del con;
-                for di in ic:
-                    del di[k];
-    else:
-        out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
+    out=flds_concat_doms(doms,vprint,mempattern=mempattern);
     del doms;
-
     for k in out:
         out[k] = out[k].astype('=f4');
-    if not keep_edges:
+    if not argsort or first_sort:
         vprint('sorting rows...');
-        sort = flds_firstsort(out)
-        out = flds_sort(out,sort);
+        argsort = flds_firstsort(out)
+    out = flds_sort(out,argsort);
     if not keep_xs:
         out.pop('xs',None);
         out.pop('ys',None);
@@ -623,7 +615,7 @@ def read_flds(file, header, var, vprint,
                 vprint('saving {}'.format(k));
                 rout[k] = out[k];
             out=rout;
-    if first_sort and not keep_edges:
+    if first_sort:
         out = (out, sort);
     return out;
 
@@ -705,8 +697,8 @@ def read(fname,**kw):
                     None (default), read all quantities.
     keep_edges   -- If set to truthy, then don't remove the edges from domains before
                     concatenation and don't reshape the flds data.
-    sort         -- If not None, sort using these indices, useful for avoiding
-                    resorting. If True and not an ndarray, just sort.
+    argsort      -- If not None, sort using these indices, useful for avoiding
+                    resorting.
     first_sort   -- If truthy, sort, and return the sort data for future flds
                     that should have the same shape.
     keep_xs      -- Keep the xs's, that is, the grid information. Usually redundant
@@ -749,10 +741,10 @@ def read(fname,**kw):
                 var=kw['var'];
             keep_edges = test(kw, 'keep_edges');
             first_sort = test(kw, 'first_sort');
-            if test(kw,'sort'):
-                sort = kw['sort']
+            if test(kw,'argsort'):
+                argsort = kw['argsort']
             else:
-                sort = None;
+                argsort = None;
             keep_xs = test(kw, 'keep_xs');
             return_array = test(kw, 'return_array');
             mempattern='fast';
@@ -773,7 +765,7 @@ def read(fname,**kw):
                 file,header,var,vprint,
                 keep_edges=keep_edges,
                 first_sort=first_sort,
-                sort=sort,
+                argsort=argsort,
                 keep_xs=keep_xs,
                 return_array=return_array,
                 mempattern=mempattern,),
@@ -781,7 +773,7 @@ def read(fname,**kw):
                 file,header,var, vprint,
                 keep_edges=keep_edges,
                 first_sort=first_sort,
-                sort=sort,
+                argsort=argsort,
                 keep_xs=keep_xs,
                 return_array=return_array,
                 mempattern=mempattern,

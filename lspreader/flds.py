@@ -34,7 +34,8 @@ def vector_norm(d,k):
 
 def read_indexed(i,flds=None,sclr=None,
                  gzip='guess', dir='.', vector_norms=True,
-                 keep_xs=False,gettime=False):
+                 keep_xs=False,gettime=False,
+                 vprint=True):
     '''
     A smart indexing reader that reads files by names. Looks for files
     like "<dir>/flds<i>.p4<compression>" where dir and the index are
@@ -82,9 +83,11 @@ def read_indexed(i,flds=None,sclr=None,
     elif flds is not None and sclr is not None:
         sd,srt=read(sclrname,
                     var=sclr,first_sort=True, gzip='guess',
+                    vprint=vprint,
                     keep_xs=keep_xs);
         fd=read(fldsname,
                 var=flds, sort=srt, gzip='guess',
+                vprint=vprint,
                 keep_xs=keep_xs);
         ret = dict(sd=sd,fd=fd);
         ret.update({k:sd[k] for k in sd});
@@ -100,7 +103,7 @@ def read_indexed(i,flds=None,sclr=None,
         else:
             var = sclr;
             name= sclrname;
-        ret,_ = read(name,var=var,first_sort=True,gzip='guess');
+        ret,_ = read(name,var=var,first_sort=True,gzip='guess',vprint=vprint);
         if flds and vector_norms:
             ret.update({k:vector_norm(ret,k) for k in flds})
         if gettime:
