@@ -89,7 +89,7 @@ def read_indexed(i,flds=None,sclr=None,
                     vprint=vprint,
                     keep_xs=keep_xs);
         fd=read(fldsname,
-                var=flds, sort=srt, gzip='guess',
+                var=flds, argsort=srt, gzip='guess',
                 vprint=vprint,
                 keep_xs=keep_xs);
         ret = dict(sd=sd,fd=fd);

@@ -183,6 +183,8 @@ def flds_sort(d,s,shape=None):
 
     d   -- the flds/sclr data
     s   -- (si, shape) sorting and shaping data from firstsort.
+    shape -- if you want to add the shape separately, with s
+             the argsort.
     '''
     labels = [ key for key in d.keys()
                if key not in ['t', 'xs', 'ys', 'zs', 'fd', 'sd'] ];
@@ -207,8 +209,6 @@ def flds_concat_doms(doms,vprint,mempattern='fast'):
     vprint     -- vprinter, required
     mempattern -- memory pattern
     '''
-    vprint('stringing domains together');
-    vprint('mempattern used is {}'.format(mempattern));
     out=dict();
     if mempattern == 'memsave_1':
         keys = list(doms[0].keys());
@@ -245,197 +245,26 @@ def flds_concat_doms(doms,vprint,mempattern='fast'):
         out = { k : np.concatenate([d[k] for d in doms]) for k in doms[0] };
     return out;
         
-
-def read_flds_unstructured(
-        file, header, var, vprint,
-        lims=None,
-        vector=True,
-        mempattern='fast',
-        return_array=False,
-        loglvl=100,
-        **kw):
-    vprint("!!Reading unstructured data");
-    xlims = lims[0:2];
-    ylims = lims[2:4];
-    zlims = lims[4:6];
-    if vector:
-        size=3;
-        readin = set();
-        for i in var:#we assume none of the fields end in x
-            if i[-1] == 'x' or i[-1] == 'y' or i[-1] == 'z':
-                readin.add(i[:-1]);
-            else:
-                readin.add(i);
-    else:
-        size=1;
-        readin = set(var);
-    doms = [];
-    qs = [i[0] for i in header['quantities']];
-    for i in range(header['domains']):
-        iR, jR, kR = get_int(file, N=3);
-        #getting grid parameters (real coordinates)
-        nI = get_int(file); Ip = get_float(file,N=nI, forcearray=True);
-        nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
-        nK = get_int(file); Kp = get_float(file,N=nK, forcearray=True);
-        nAll = nI*nJ*nK;
-        if loglvl == 1:
-            vprint('reading domain {} with dimensions {}x{}x{}={}.'.format(i,nI,nJ,nK,nAll));
-        elif (i+1)%loglvl==0:
-            vprint("reading domain {:04}...".format(i+1));
-        d={}
-        d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
-        d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
-        d['z'], d['y'], d['x'] = d['z'].ravel(), d['y'].ravel(), d['x'].ravel();
-        good =np.logical_and(xlims[0] <= d['x'],d['x']<= xlims[1]);
-        good&=np.logical_and(ylims[0] <= d['y'],d['y']<= ylims[1]);
-        good&=np.logical_and(zlims[0] <= d['z'],d['z']<= zlims[1]);
-
-        d['x'] = d['x'][good];
-        d['y'] = d['y'][good];
-        d['z'] = d['z'][good];
-        
-        d['xs'] = d['xs'][xlims[0] <= d['xs']];
-        d['xs'] = d['xs'][xlims[1] >= d['xs']];
-        d['ys'] = d['ys'][ylims[0] <= d['ys']];
-        d['ys'] = d['ys'][ylims[1] >= d['ys']];
-        d['zs'] = d['zs'][zlims[0] <= d['zs']];
-        d['zs'] = d['zs'][zlims[1] >= d['zs']];
-        
-        for quantity in qs:
-            if quantity not in readin:
-                file.seek(nAll*4*size,1);
-            else:
-                data = get_float(file,N=nAll*size);
-                if size==3:
-                    data=data.reshape(nAll,3).T;
-                    d[quantity+'x'] = data[0][good]
-                    d[quantity+'y'] = data[1][good]
-                    d[quantity+'z'] = data[2][good]
-                else:
-                    d[quantity] = data[good];
-                del data
-        doms.append(d);
-    vprint('stringing domains together');
-    vprint('mempattern used is {}'.format(mempattern));
-    flds_concat_doms(doms, vprint, mempattern=mempattern);
-        
-
-def read_flds_restricted(
-        file, header, var, vprint,
-        lims=None,
-        vector=True,keep_edges=False,
-        mempattern='fast',
-        return_array=False,
-        argsort = None,
-        first_sort=False,
-        loglvl=100,
-        **kw):
-    vprint("!!Reading with restrictions");
-    vprint("Possible issues with irregularly strided arrays.");
-    xlims = lims[0:2];
-    ylims = lims[2:4];
-    zlims = lims[4:6];
-    if vector:
-        size=3;
-        readin = set();
-        for i in var:#we assume none of the fields end in x
-            if i[-1] == 'x' or i[-1] == 'y' or i[-1] == 'z':
-                readin.add(i[:-1]);
-            else:
-                readin.add(i);
-    else:
-        size=1;
-        readin = set(var);
-    doms = [];
-    qs = [i[0] for i in header['quantities']];
-    for i in range(header['domains']):
-        iR, jR, kR = get_int(file, N=3);
-        #getting grid parameters (real coordinates)
-        nI = get_int(file); Ip = get_float(file,N=nI, forcearray=True);
-        nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
-        nK = get_int(file); Kp = get_float(file,N=nK, forcearray=True);
-        nAll = nI*nJ*nK;
-        if loglvl == 1:
-            vprint('reading domain {} with dimensions {}x{}x{}={}.'.format(i,nI,nJ,nK,nAll));
-        elif (i+1)%loglvl==0:
-            vprint("reading domain {:04}...".format(i+1));
-        d={}
-        d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
-        d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
-        d['z'], d['y'], d['x'] = d['z'].ravel(), d['y'].ravel(), d['x'].ravel();
-        good =np.logical_and(xlims[0] <= d['x'],d['x']<= xlims[1]);
-        good&=np.logical_and(ylims[0] <= d['y'],d['y']<= ylims[1]);
-        good&=np.logical_and(zlims[0] <= d['z'],d['z']<= zlims[1]);
-
-        d['x'] = d['x'][good];
-        d['y'] = d['y'][good];
-        d['z'] = d['z'][good];
-        
-        d['xs'] = d['xs'][xlims[0] <= d['xs']];
-        d['xs'] = d['xs'][xlims[1] >= d['xs']];
-        d['ys'] = d['ys'][ylims[0] <= d['ys']];
-        d['ys'] = d['ys'][ylims[1] >= d['ys']];
-        d['zs'] = d['zs'][zlims[0] <= d['zs']];
-        d['zs'] = d['zs'][zlims[1] >= d['zs']];
-        
-        for quantity in qs:
-            if quantity not in readin:
-                file.seek(nAll*4*size,1);
-            else:
-                data = get_float(file,N=nAll*size);
-                if size==3:
-                    data=data.reshape(nAll,3).T;
-                    d[quantity+'x'] = data[0][good]
-                    d[quantity+'y'] = data[1][good]
-                    d[quantity+'z'] = data[2][good]
-                else:
-                    d[quantity] = data[good];
-                del data
-        doms.append(d);
-    if not keep_edges:
-        vprint("removing edges");
-        dims = ['xs','ys','zs'];
-        readqs = [k for k in doms[0].keys()
-                  if k not in dims ] if len(doms) > 0 else None;
+def flds_shave_doms(doms,mins=None):
+    dims = ['xs','ys','zs'];
+    readqs = [k for k in doms[0].keys()
+              if k not in dims ] if len(doms) > 0 else None;
+    if mins is None:
         mins = [ min([d[l].min() for d in doms])
                  for l in dims ];
-        print(mins);
-        def cutdom(d):
-            ldim = [len(d[l]) for l in dims];
-            cuts = [ np.isclose(d[l][0], smin)
-                     for l,smin in zip(dims,mins) ];
-            cuts[:] = [None if i else 1
-                       for i in cuts];
-            for quantity in readqs:
-                d[quantity]=d[quantity].reshape((ldim[2],ldim[1],ldim[0]));
-                d[quantity]=d[quantity][cuts[2]:,cuts[1]:,cuts[0]:].ravel();
-            for l,cut in zip(dims,cuts):
-                d[l] = d[l][cut:];
-            return d;
-        doms[:] = [cutdom(d) for d in doms];
-    vprint('stringing domains together');
-    vprint('mempattern used is {}'.format(mempattern));
-    out = flds_concat_doms(doms,vprint,mempattern=mempattern)
-    del doms;
-    for k in out:
-        out[k] = out[k].astype('=f4');
-    if not keep_edges:
-        vprint('sorting rows...');
-        sort = flds_firstsort(out)
-        out = flds_sort(out,sort);
-    del out['xs'], out['ys'], out['zs'];
-    if return_array:
-        vprint('stuffing into array'.format(k));
-        keys = sorted(out.keys());
-        dt = list(zip(keys,['f4']*len(out)));
-        rout = np.zeros(out['x'].shape,dtype=dt);
-        for k in keys:
-            vprint('saving {}'.format(k));
-            rout[k] = out[k];
-        out=rout;
-    if first_sort and not keep_edges:
-        out = (out, sort);
-    return out;
+    def cutdom(d):
+        ldim = [len(d[l]) for l in dims];
+        cuts = [ np.isclose(d[l][0], smin)
+                 for l,smin in zip(dims,mins) ];
+        cuts[:] = [None if i else 1
+                   for i in cuts];
+        for quantity in readqs:
+            d[quantity]=d[quantity].reshape((ldim[2],ldim[1],ldim[0]));
+            d[quantity]=d[quantity][cuts[2]:,cuts[1]:,cuts[0]:].ravel();
+        for l,cut in zip(dims,cuts):
+            d[l] = d[l][cut:];
+        return d;
+    return [cutdom(d) for d in doms];
 
 
 def read_flds_new(
@@ -530,13 +359,197 @@ def read_flds_new(
     return out;
 
 
-def read_flds(file, header, var, vprint,
-              vector=True,keep_edges=False,
-              argsort=None,first_sort=False,
-              keep_xs=False,
-              return_array=False,
-              loglvl=100,
-              mempattern='fast'):
+def read_flds_unstructured(
+        file, header, var, vprint,
+        lims=None,
+        vector=True,
+        mempattern='fast',
+        return_array=False,
+        loglvl=100,
+        **kw):
+    vprint("!!Reading unstructured data");
+    xlims = lims[0:2];
+    ylims = lims[2:4];
+    zlims = lims[4:6];
+    if vector:
+        size=3;
+        readin = set();
+        for i in var:#we assume none of the fields end in x
+            if i[-1] == 'x' or i[-1] == 'y' or i[-1] == 'z':
+                readin.add(i[:-1]);
+            else:
+                readin.add(i);
+    else:
+        size=1;
+        readin = set(var);
+    doms = [];
+    qs = [i[0] for i in header['quantities']];
+    for i in range(header['domains']):
+        iR, jR, kR = get_int(file, N=3);
+        #getting grid parameters (real coordinates)
+        nI = get_int(file); Ip = get_float(file,N=nI, forcearray=True);
+        nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
+        nK = get_int(file); Kp = get_float(file,N=nK, forcearray=True);
+        nAll = nI*nJ*nK;
+        if loglvl == 1:
+            vprint('reading domain {} with dimensions {}x{}x{}={}.'.format(i,nI,nJ,nK,nAll));
+        elif (i+1)%loglvl==0:
+            vprint("reading domain {:04}...".format(i+1));
+        d={}
+        d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
+        d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
+        d['z'], d['y'], d['x'] = d['z'].ravel(), d['y'].ravel(), d['x'].ravel();
+        good =np.logical_and(xlims[0] <= d['x'],d['x']<= xlims[1]);
+        good&=np.logical_and(ylims[0] <= d['y'],d['y']<= ylims[1]);
+        good&=np.logical_and(zlims[0] <= d['z'],d['z']<= zlims[1]);
+
+        d['x'] = d['x'][good];
+        d['y'] = d['y'][good];
+        d['z'] = d['z'][good];
+        
+        d['xs'] = d['xs'][xlims[0] <= d['xs']];
+        d['xs'] = d['xs'][xlims[1] >= d['xs']];
+        d['ys'] = d['ys'][ylims[0] <= d['ys']];
+        d['ys'] = d['ys'][ylims[1] >= d['ys']];
+        d['zs'] = d['zs'][zlims[0] <= d['zs']];
+        d['zs'] = d['zs'][zlims[1] >= d['zs']];
+        
+        for quantity in qs:
+            if quantity not in readin:
+                file.seek(nAll*4*size,1);
+            else:
+                data = get_float(file,N=nAll*size);
+                if size==3:
+                    data=data.reshape(nAll,3).T;
+                    d[quantity+'x'] = data[0][good]
+                    d[quantity+'y'] = data[1][good]
+                    d[quantity+'z'] = data[2][good]
+                else:
+                    d[quantity] = data[good];
+                del data
+        doms.append(d);
+    vprint('stringing domains together');
+    vprint('mempattern used is {}'.format(mempattern));
+    flds_concat_doms(doms, vprint, mempattern=mempattern);
+        
+
+def read_flds_restricted(
+        file, header, var, vprint,
+        lims=None,
+        vector=True,keep_edges=False,
+        argsort = None,first_sort=False,
+        mempattern='fast',
+        return_array=False,
+        loglvl=100,
+        **kw):
+    vprint("!!Reading with restrictions");
+    vprint("Possible issues with irregularly strided arrays.");
+    xlims = lims[0:2];
+    ylims = lims[2:4];
+    zlims = lims[4:6];
+    mins=[float('inf'),float('inf'),float('inf')];
+    if vector:
+        size=3;
+        readin = set();
+        for i in var:#we assume none of the fields end in x
+            if i[-1] == 'x' or i[-1] == 'y' or i[-1] == 'z':
+                readin.add(i[:-1]);
+            else:
+                readin.add(i);
+    else:
+        size=1;
+        readin = set(var);
+    doms = [];
+    qs = [i[0] for i in header['quantities']];
+    for i in range(header['domains']):
+        iR, jR, kR = get_int(file, N=3);
+        #getting grid parameters (real coordinates)
+        nI = get_int(file); Ip = get_float(file,N=nI, forcearray=True);
+        nJ = get_int(file); Jp = get_float(file,N=nJ, forcearray=True);
+        nK = get_int(file); Kp = get_float(file,N=nK, forcearray=True);
+        nAll = nI*nJ*nK;
+        if loglvl < 1:
+            vprint('reading domain {} with dimensions {}x{}x{}={}.'.format(i,nI,nJ,nK,nAll));
+        elif (i+1)%loglvl==0:
+            vprint("reading domain {:04}...".format(i+1));
+        d={}
+        d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
+        #lowest index will be minimum always
+        if d['xs'][0] < mins[0]: mins[0] = d['xs'][0]
+        if d['ys'][0] < mins[1]: mins[1] = d['ys'][0]
+        if d['zs'][0] < mins[2]: mins[2] = d['zs'][0]
+        
+        d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
+        d['z'], d['y'], d['x'] = d['z'].ravel(), d['y'].ravel(), d['x'].ravel();
+        good =np.logical_and(xlims[0] <= d['x'],d['x']<= xlims[1]);
+        good&=np.logical_and(ylims[0] <= d['y'],d['y']<= ylims[1]);
+        good&=np.logical_and(zlims[0] <= d['z'],d['z']<= zlims[1]);
+        if np.max(good) == False:
+            #entire domain is out of restriction
+            #skip ahead
+            file.seek(nAll*4*size*len(qs),1);
+            continue;
+        d['x'] = d['x'][good];
+        d['y'] = d['y'][good];
+        d['z'] = d['z'][good];
+        d['xs'] = d['xs'][xlims[0] <= d['xs']];
+        d['xs'] = d['xs'][xlims[1] >= d['xs']];
+        d['ys'] = d['ys'][ylims[0] <= d['ys']];
+        d['ys'] = d['ys'][ylims[1] >= d['ys']];
+        d['zs'] = d['zs'][zlims[0] <= d['zs']];
+        d['zs'] = d['zs'][zlims[1] >= d['zs']];
+        
+        for quantity in qs:
+            if quantity not in readin:
+                file.seek(nAll*4*size,1);
+            else:
+                data = get_float(file,N=nAll*size);
+                if size==3:
+                    data=data.reshape(nAll,3).T;
+                    d[quantity+'x'] = data[0][good]
+                    d[quantity+'y'] = data[1][good]
+                    d[quantity+'z'] = data[2][good]
+                else:
+                    d[quantity] = data[good];
+                del data
+        doms.append(d);
+    if not keep_edges:
+        vprint("removing edges");
+        doms = flds_shave_doms(doms,mins=mins)
+    vprint('stringing domains together');
+    vprint('mempattern used is {}'.format(mempattern));
+    out = flds_concat_doms(doms,vprint,mempattern=mempattern)
+    del doms;
+    for k in out:
+        out[k] = out[k].astype('=f4');
+    if not argsort or first_sort:
+        vprint('sorting rows...');
+        argsort = flds_firstsort(out)
+    out = flds_sort(out,argsort);
+    del out['xs'], out['ys'], out['zs'];
+    if return_array:
+        vprint('stuffing into array'.format(k));
+        keys = sorted(out.keys());
+        dt = list(zip(keys,['f4']*len(out)));
+        rout = np.zeros(out['x'].shape,dtype=dt);
+        for k in keys:
+            vprint('saving {}'.format(k));
+            rout[k] = out[k];
+        out=rout;
+    if first_sort and not keep_edges:
+        out = (out, argsort);
+    return out;
+
+
+
+def read_flds(
+        file, header, var, vprint,
+        vector=True,keep_edges=False,
+        argsort=None,first_sort=False,
+        keep_xs=False,
+        mempattern='fast',
+        return_array=False,
+        loglvl=100,):
     if vector:
         size=3;
         readin = set();
@@ -562,7 +575,7 @@ def read_flds(file, header, var, vprint,
             vprint('reading domain {} with dimensions {}x{}x{}={}.'.format(
                 i,nI,nJ,nK,nAll));
         elif (i+1)%loglvl==0:
-            vprint('reading domain {:04}...'.format(i));
+            vprint('reading domain {:04}...'.format(i+1));
         d={}
         d['xs'], d['ys'], d['zs'] = Ip, Jp, Kp;
         d['z'], d['y'], d['x'] = np.meshgrid(Kp,Jp,Ip,indexing='ij')
@@ -578,25 +591,8 @@ def read_flds(file, header, var, vprint,
                     del data, d[quantity];
         doms.append(d);
     if not keep_edges:
-        vprint("removing edges");
-        dims = ['xs','ys','zs'];
-        readqs = [k for k in doms[0].keys()
-                  if k not in dims ] if len(doms) > 0 else None;
-        mins = [ min([d[l].min() for d in doms])
-                 for l in dims ];
-        def cutdom(d):
-            ldim = [len(d[l]) for l in dims];
-            cuts = [ np.isclose(d[l][0], smin)
-                     for l,smin in zip(dims,mins) ];
-            cuts[:] = [None if i else 1
-                       for i in cuts];
-            for quantity in readqs:
-                d[quantity]=d[quantity].reshape((ldim[2],ldim[1],ldim[0]));
-                d[quantity]=d[quantity][cuts[2]:,cuts[1]:,cuts[0]:].ravel();
-            for l,cut in zip(dims,cuts):
-                d[l] = d[l][cut:];
-            return d;
-        doms[:] = [cutdom(d) for d in doms];
+        vprint("removing minimum edges in domains");
+        doms = flds_shave_doms(doms);
     vprint('stringing domains together');
     vprint('mempattern used is {}'.format(mempattern));
     out=flds_concat_doms(doms,vprint,mempattern=mempattern);
@@ -608,9 +604,7 @@ def read_flds(file, header, var, vprint,
         argsort = flds_firstsort(out)
     out = flds_sort(out,argsort);
     if not keep_xs:
-        out.pop('xs',None);
-        out.pop('ys',None);
-        out.pop('zs',None);
+        del out['xs'],out['ys'],out['zs']
         if return_array:
             vprint('stuffing into array'.format(k));
             keys = sorted(out.keys());
@@ -620,8 +614,8 @@ def read_flds(file, header, var, vprint,
                 vprint('saving {}'.format(k));
                 rout[k] = out[k];
             out=rout;
-    if first_sort:
-        out = (out, sort);
+    if first_sort and not keep_edges:
+        out = (out, argsort);
     return out;
 
 def iseof(file):
@@ -744,7 +738,7 @@ def read(fname,**kw):
                 var=[i[0] for i in header['quantities']];
             else:
                 var=kw['var'];
-            keep_edges = True;#test(kw, 'keep_edges');
+            keep_edges = test(kw, 'keep_edges');
             first_sort = test(kw, 'first_sort');
             if test(kw,'argsort'):
                 argsort = kw['argsort']
