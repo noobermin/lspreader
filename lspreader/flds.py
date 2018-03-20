@@ -68,9 +68,6 @@ def read_indexed(i,flds=None,sclr=None,
     keep_xs      -- Keep the edges. By default, False.
     gettime      -- Get the timestamp.
     '''
-    def _v(s):
-        print('noobhack {:04}: {}'.format(i,s));
-    vprint=_v;
     fldsp4  = '{}/flds{}.p4'.format(dir,i);
     sclrp4  = '{}/sclr{}.p4'.format(dir,i);
     fldsgz  = fldsp4 + '.gz';
