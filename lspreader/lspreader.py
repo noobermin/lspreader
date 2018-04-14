@@ -299,17 +299,28 @@ def read_flds_new(
         if (i+1) % loglvl == 0:
             vprint("{:04}...".format(i+1));
         file.seek(nAll*4*len(qs)*size,1);
-    outsz = sum([dom['nAll'] for dom in doms])*size;
+    vprint("making grid");
+    grid = [
+        np.unique(np.array([d[l+'s'] for d in doms]).ravel())
+        for l in 'xyz'];
+    for g in grid:
+       I = np.argsort(g)
+    mins = [g[0] for g in grid];
+    vprint("determining shave offs");
+    for d in doms:
+        Ps = [d['xs'],d['ys'],d['zs']]
+        d['preshape']=(len(xs),len(ys),len(zs));
+        d['sub'] = [ None if np.isclose(i[0],mn) else 1
+               for i,mn,zip(Ps,mins) ];
+        d['start'] = [ g.index(ip[0]) for g,ip in zip(grid,Ps) ]
+    outsz = [ len(g) for g in grid ]
     vprint("Allocating output. If this fails, you don't have enough memory!");
     vprint("outsz of {} ({})".format(outsz,hex(outsz)));
     if size == 3:
         out = { iq+di:np.zeros(outsz)
-                for iq in qs+[''] for di in ['x','y','z'] };
+                for iq in qs for di in 'xyz' };
     else:
-        out = { iq:np.zeros(outsz) for iq in qs+['x','y','z'] };
-    xs=np.concatenate([dom['xs'] for dom in doms]).astype("=f4");
-    ys=np.concatenate([dom['ys'] for dom in doms]).astype("=f4");
-    zs=np.concatenate([dom['zs'] for dom in doms]).astype("=f4");
+        out = { iq:np.zeros(outsz) for iq in qs };
     #position in output
     outi = 0;
     vprint("reading quantities {}".format([q for q in qs if q in readin]));
@@ -319,43 +330,32 @@ def read_flds_new(
         file.seek(dom['point']);
         nAll = dom['nAll'];
         outend = outi+nAll;
+        st = dom['start']
         for quantity in qs:
             if quantity not in readin:
                 file.seek(nAll*4*size,1);
             else:
                 data = get_float(file,N=nAll*size);
                 if size == 1:
-                    out[quantity][outi:outi+nAll] = data;
+                    data = data.reshape(dom['preshape']);
+                    data = data[sub[0]:,sub[1]:,sub[2]:]
+                    datsh = data.shape;
+                    out[quantity][st[0]:datsh[0],st[1]:datsh[1],st[2]:datsh[2]] = data;
                 else:
-                    data = data.reshape(nAll,3).T;
-                    out[quantity+'x'][outi:outend] = data[0];
-                    out[quantity+'y'][outi:outend] = data[1];
-                    out[quantity+'z'][outi:outend] = data[2];
+                    datas = data.reshape(nAll,3).T;
+                    for data,dim in zip(datas,'xyz'):
+                        data = data.reshape(dom['preshape']);
+                        data = data[sub[0]:,sub[1]:,sub[2]:]
+                        datsh = data.shape
+                        out[quantity+dim][st[0]:datsh[0],st[1]:datsh[1],st[2]:datsh[2]] = data;
                 del data;
-        Z,Y,X = np.meshgrid(dom['zs'],dom['ys'],dom['xs']);
-        out['x'][outi:outend] = X.ravel();
-        out['y'][outi:outend] = Y.ravel();
-        out['z'][outi:outend] = Z.ravel();
-        del X,Y,Z;
-        del dom['zs'],dom['ys'],dom['xs'];
-        outi=outend;
-    del doms,dom;
     for k in out:
-        out[k] = out[k].astype('=f4');
+        out[k] = out[k].astype('=f4',copy=False);
+    grid[:] = [g.astype('=f4',copy=False) for g in grid];
+    
     vprint('sorting rows, time this');
-    argsort = flds_firstsort(out,xs=xs,ys=ys,zs=zs)
-    out = flds_sort(out,argsort);
-    if return_array:
-        vprint('stuffing into array'.format(k));
-        keys = sorted(out.keys());
-        dt = list(zip(keys,['f4']*len(out)));
-        rout = np.zeros(out['x'].shape,dtype=dt);
-        for k in keys:
-            vprint('saving {}'.format(k));
-            rout[k] = out[k];
-        out=rout;
-    if first_sort and not keep_edges:
-        out = (out, sort);
+    #argsort = flds_firstsort(out,xs=xs,ys=ys,zs=zs)
+    #out = flds_sort(out,argsort);
     return out;
 
 
