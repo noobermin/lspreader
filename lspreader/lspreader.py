@@ -6,7 +6,7 @@ import xdrlib as xdr;
 import re;
 import numpy as np;
 import gzip;
-from pys import test,chunks;
+from pys import test,chunks,take;
 import sys;
 if sys.version_info >= (3,0):
     strenc = lambda b: b.decode('latin1');
@@ -331,16 +331,12 @@ def read_flds_new(
                 for iq in qs for di in 'xyz' };
     else:
         out = { iq:np.zeros(outsz) for iq in qs };
-    #position in output
-    outi = 0;
     vprint("reading quantities {}".format([q for q in qs if q in readin]));
     for i,dom in enumerate(doms):
         if (i+1) % loglvl == 0:
             vprint("reading domain {:04}...".format(i+1));
         file.seek(dom['point']);
-        nAll = dom['nAll'];
-        outend = outi+nAll;
-        st = dom['start']
+        st,sub,nAll  = take(dom,['start','sub','nAll']);
         for quantity in qs:
             if quantity not in readin:
                 file.seek(nAll*4*size,1);
