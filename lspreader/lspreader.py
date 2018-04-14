@@ -267,10 +267,46 @@ def flds_shave_doms(doms,mins=None):
     return [cutdom(d) for d in doms];
 
 
+
+
+
+
+def read_flds_doms(file, header, qs, vprint, size):
+    start = file.tell();
+    vprint("generating grid and doms");
+    doms  = [];
+    for i in range(header['domains']):
+        #seek over indices
+        iR, jR, kR = get_int(file, N=3);
+        nI = get_int(file); xs = get_float(file,N=nI, forcearray=True);
+        nJ = get_int(file); ys = get_float(file,N=nJ, forcearray=True);
+        nK = get_int(file); zs = get_float(file,N=nK, forcearray=True);
+        nAll=nI*nJ*nK;
+        doms.append(dict(xs=xs,ys=ys,zs=zs,nAll=nAll,point=file.tell()));
+        if (i+1) % loglvl == 0:
+            vprint("{:04}...".format(i+1));
+        file.seek(nAll*4*len(qs)*size,1);
+    vprint("making grid");
+    grid=[];
+    for l in 'xyz':
+        i = np.unique(np.concatenate([d[l+'s'] for d in doms]))
+        i.sort();
+        grid.append(i);
+    mins = [g[0] for g in grid];
+    vprint("determining shave offs");
+    for d in doms:
+        Ps = [d['xs'],d['ys'],d['zs']]
+        d['preshape']=(len(xs),len(ys),len(zs));
+        d['sub'] = [ None if np.isclose(i[0],mn) else 1
+               for i,mn in zip(Ps,mins) ];
+        d['start'] = [ g.index(ip[0]) for g,ip in zip(grid,Ps) ]
+    file.seek(start);
+    return doms,grid;
+    
 def read_flds_new(
         file, header, var, vprint,
-        vector=True,keep_edges=False,
-        return_array=False,**kw):
+        vector=True,doms=None,
+        grid=None,**kw):
     vprint("!!Using new flds reader");
     loglvl=100;
     if vector:
@@ -284,35 +320,12 @@ def read_flds_new(
     else:
         size=1;
         readin = set(var);
-    doms = [];
     qs = [i[0] for i in header['quantities']];
+    if not doms:
+        doms,grid = read_flds_doms(file,header, qs, vprint, size);
+    elif not grid:
+        raise RuntimeError("how did this happen???");
     #get global array size
-    start = file.tell();
-    for i in range(header['domains']):
-        #seek over indices
-        iR, jR, kR = get_int(file, N=3);
-        nI = get_int(file); xs = get_float(file,N=nI, forcearray=True);
-        nJ = get_int(file); ys = get_float(file,N=nJ, forcearray=True);
-        nK = get_int(file); zs = get_float(file,N=nK, forcearray=True);
-        nAll=nI*nJ*nK;
-        doms.append(dict(xs=xs,ys=ys,zs=zs,nAll=nAll,point=file.tell()));
-        if (i+1) % loglvl == 0:
-            vprint("{:04}...".format(i+1));
-        file.seek(nAll*4*len(qs)*size,1);
-    vprint("making grid");
-    grid = [
-        np.unique(np.array([d[l+'s'] for d in doms]).ravel())
-        for l in 'xyz'];
-    for g in grid:
-       I = np.argsort(g)
-    mins = [g[0] for g in grid];
-    vprint("determining shave offs");
-    for d in doms:
-        Ps = [d['xs'],d['ys'],d['zs']]
-        d['preshape']=(len(xs),len(ys),len(zs));
-        d['sub'] = [ None if np.isclose(i[0],mn) else 1
-               for i,mn in zip(Ps,mins) ];
-        d['start'] = [ g.index(ip[0]) for g,ip in zip(grid,Ps) ]
     outsz = [ len(g) for g in grid ]
     vprint("Allocating output. If this fails, you don't have enough memory!");
     vprint("outsz of {} ({})".format(outsz,hex(outsz)));
