@@ -271,7 +271,7 @@ def flds_shave_doms(doms,mins=None):
 
 
 
-def read_flds_doms(file, header, qs, vprint, size):
+def read_flds_doms(file, header, qs, vprint, size,loglvl=100):
     start = file.tell();
     vprint("generating grid and doms");
     doms  = [];
@@ -306,9 +306,8 @@ def read_flds_doms(file, header, qs, vprint, size):
 def read_flds_new(
         file, header, var, vprint,
         vector=True,doms=None,
-        grid=None,**kw):
+        grid=None,loglvl=100,**kw):
     vprint("!!Using new flds reader");
-    loglvl=100;
     if vector:
         size=3;
         readin = set();
@@ -322,7 +321,7 @@ def read_flds_new(
         readin = set(var);
     qs = [i[0] for i in header['quantities']];
     if not doms:
-        doms,grid = read_flds_doms(file,header, qs, vprint, size);
+        doms,grid = read_flds_doms(file,header, qs, vprint, size, loglvl=loglvl);
     elif not grid:
         raise RuntimeError("how did this happen???");
     #get global array size
