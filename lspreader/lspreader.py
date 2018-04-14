@@ -267,7 +267,7 @@ def flds_shave_doms(doms,mins=None):
     return [cutdom(d) for d in doms];
 
 
-def read_flds_doms(file, header, qs, vprint, size,loglvl=100):
+def read_flds_doms(file, header, nfloats,vprint,loglvl=100):
     start = file.tell();
     vprint("generating grid and doms");
     doms  = [];
@@ -281,7 +281,7 @@ def read_flds_doms(file, header, qs, vprint, size,loglvl=100):
         doms.append(dict(xs=xs,ys=ys,zs=zs,nAll=nAll,point=file.tell()));
         if (i+1) % loglvl == 0:
             vprint("{:04}...".format(i+1));
-        file.seek(nAll*4*len(qs)*size,1);
+        file.seek(nAll*4*nfloats,1);
     vprint("making grid");
     grid=[];
     for l in 'xyz':
@@ -319,7 +319,7 @@ def read_flds_new(
         readin = set(var);
     qs = [i[0] for i in header['quantities']];
     if not doms:
-        doms,grid = read_flds_doms(file,header, qs, vprint, size, loglvl=loglvl);
+        doms,grid = read_flds_doms(file, header, len(qs)*size, vprint, loglvl=loglvl);
     elif not grid:
         raise RuntimeError("how did this happen???");
     #get global array size
