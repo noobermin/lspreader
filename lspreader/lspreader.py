@@ -304,6 +304,7 @@ def read_flds_new(
         vector=True,doms=None,
         grid=None,loglvl=100,
         return_doms=False,
+        fltype='float32',
         **kw):
     vprint("!!Using new flds reader");
     if vector:
@@ -327,10 +328,10 @@ def read_flds_new(
     vprint("Allocating output. If this fails, you don't have enough memory!");
     vprint("outsz of {} ({})".format(outsz,[hex(i) for i in outsz]));
     if size == 3:
-        out = { iq+di:np.zeros(outsz)
+        out = { iq+di:np.zeros(outsz,dtype=fltype)
                 for iq in qs for di in 'xyz' if iq in readin};
     else:
-        out = { iq:np.zeros(outsz) for iq in qs if iq in readin };
+        out = { iq:np.zeros(outsz,dtype=fltype) for iq in qs if iq in readin };
     vprint("reading quantities {}".format([q for q in qs if q in readin]));
     for i,dom in enumerate(doms):
         if (i+1) % loglvl == 0:
