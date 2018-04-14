@@ -346,14 +346,20 @@ def read_flds_new(
                     data = data.reshape(dom['preshape']);
                     data = data[sub[0]:,sub[1]:,sub[2]:]
                     datsh = data.shape;
-                    out[quantity][st[0]:datsh[0],st[1]:datsh[1],st[2]:datsh[2]] = data;
+                    out[quantity][
+                            st[0]:st[0]+datsh[0],
+                            st[1]:st[1]+datsh[1],
+                            st[2]:st[2]+datsh[2]] = idat;
                 else:
                     data = data.reshape(nAll,3).T;
                     for idat,dim in zip(data,'xyz'):
                         idat = idat.reshape(dom['preshape']);
                         idat = idat[sub[0]:,sub[1]:,sub[2]:]
                         datsh = idat.shape
-                        out[quantity+dim][st[0]:datsh[0],st[1]:datsh[1],st[2]:datsh[2]] = idat;
+                        out[quantity+dim][
+                            st[0]:st[0]+datsh[0],
+                            st[1]:st[1]+datsh[1],
+                            st[2]:st[2]+datsh[2]] = idat;
                 del data;
     for k in out:
         out[k] = out[k].astype('=f4',copy=False);
