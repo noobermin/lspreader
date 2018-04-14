@@ -267,10 +267,6 @@ def flds_shave_doms(doms,mins=None):
     return [cutdom(d) for d in doms];
 
 
-
-
-
-
 def read_flds_doms(file, header, qs, vprint, size,loglvl=100):
     start = file.tell();
     vprint("generating grid and doms");
@@ -296,7 +292,7 @@ def read_flds_doms(file, header, qs, vprint, size,loglvl=100):
     vprint("determining shave offs");
     for d in doms:
         Ps = [d['xs'],d['ys'],d['zs']]
-        d['preshape']=(len(xs),len(ys),len(zs));
+        d['preshape']=[len(ip) for ip in Ps];
         d['sub'] = [ None if np.isclose(i[0],mn) else 1
                for i,mn in zip(Ps,mins) ];
         d['start'] = [ np.where(g==ip)[0] for g,ip in zip(grid,Ps) ]
