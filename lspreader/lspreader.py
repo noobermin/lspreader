@@ -306,7 +306,9 @@ def read_flds_doms(file, header, qs, vprint, size,loglvl=100):
 def read_flds_new(
         file, header, var, vprint,
         vector=True,doms=None,
-        grid=None,loglvl=100,**kw):
+        grid=None,loglvl=100,
+        return_doms=False,
+        **kw):
     vprint("!!Using new flds reader");
     if vector:
         size=3;
@@ -327,7 +329,7 @@ def read_flds_new(
     #get global array size
     outsz = [ len(g) for g in grid ]
     vprint("Allocating output. If this fails, you don't have enough memory!");
-    vprint("outsz of {} ({})".format(outsz,hex(outsz)));
+    vprint("outsz of {} ({})".format(outsz,[hex(i) for i in outsz]));
     if size == 3:
         out = { iq+di:np.zeros(outsz)
                 for iq in qs for di in 'xyz' };
@@ -365,9 +367,7 @@ def read_flds_new(
         out[k] = out[k].astype('=f4',copy=False);
     grid[:] = [g.astype('=f4',copy=False) for g in grid];
     
-    vprint('sorting rows, time this');
-    #argsort = flds_firstsort(out,xs=xs,ys=ys,zs=zs)
-    #out = flds_sort(out,argsort);
+    if return_doms: return doms,grid,out;
     return out;
 
 
