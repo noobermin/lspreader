@@ -336,7 +336,7 @@ def read_flds_new(
         if (i+1) % loglvl == 0:
             vprint("reading domain {:04}...".format(i+1));
         file.seek(dom['point']);
-        st,sub,nAll  = take(dom,['start','sub','nAll']);
+        st,sub,nAll  = dom['start'],dom['sub'],dom['nAll']
         for quantity in qs:
             if quantity not in readin:
                 file.seek(nAll*4*size,1);
