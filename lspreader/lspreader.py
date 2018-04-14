@@ -361,10 +361,6 @@ def read_flds_new(
                             st[1]:st[1]+datsh[1],
                             st[2]:st[2]+datsh[2]] = idat;
                 del data;
-    for k in out:
-        out[k] = out[k].astype('=f4',copy=False);
-    grid[:] = [g.astype('=f4',copy=False) for g in grid];
-    
     if return_doms: return doms,grid,out;
     return out;
 
