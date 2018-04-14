@@ -299,7 +299,7 @@ def read_flds_doms(file, header, qs, vprint, size,loglvl=100):
         d['preshape']=(len(xs),len(ys),len(zs));
         d['sub'] = [ None if np.isclose(i[0],mn) else 1
                for i,mn in zip(Ps,mins) ];
-        d['start'] = [ g.index(ip[0]) for g,ip in zip(grid,Ps) ]
+        d['start'] = [ np.where(g==ip)[0] for g,ip in zip(grid,Ps) ]
     file.seek(start);
     return doms,grid;
     
