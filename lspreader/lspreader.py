@@ -311,7 +311,7 @@ def read_flds_new(
         Ps = [d['xs'],d['ys'],d['zs']]
         d['preshape']=(len(xs),len(ys),len(zs));
         d['sub'] = [ None if np.isclose(i[0],mn) else 1
-               for i,mn,zip(Ps,mins) ];
+               for i,mn in zip(Ps,mins) ];
         d['start'] = [ g.index(ip[0]) for g,ip in zip(grid,Ps) ]
     outsz = [ len(g) for g in grid ]
     vprint("Allocating output. If this fails, you don't have enough memory!");
