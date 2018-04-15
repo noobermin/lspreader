@@ -284,14 +284,14 @@ def read_flds_doms(file, header, nfloats,vprint,loglvl=100):
         file.seek(nAll*4*nfloats,1);
     vprint("making grid");
     grid=[];
-    for l in 'xyz':
+    for l in 'zyx':
         i = np.unique(np.concatenate([d[l+'s'] for d in doms]))
         i.sort();
         grid.append(i);
     mins = [g[0] for g in grid];
     vprint("determining shave offs");
     for d in doms:
-        Ps = [d['xs'],d['ys'],d['zs']]
+        Ps = [d['zs'],d['ys'],d['xs']]
         d['preshape']=[len(ip) for ip in Ps];
         d['sub'] = [ None if np.isclose(i[0],mn) else 1
                for i,mn in zip(Ps,mins) ];
@@ -329,7 +329,7 @@ def read_flds_new(
     vprint("outsz of {} ({})".format(outsz,[hex(i) for i in outsz]));
     if size == 3:
         out = { iq+di:np.zeros(outsz,dtype=fltype)
-                for iq in qs for di in 'xyz' if iq in readin};
+                for iq in qs for di in 'zyx' if iq in readin};
     else:
         out = { iq:np.zeros(outsz,dtype=fltype) for iq in qs if iq in readin };
     vprint("reading quantities {}".format([q for q in qs if q in readin]));
