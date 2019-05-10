@@ -465,5 +465,5 @@ def readregionsp4(regionsp4,lsporder=False,str=False):
     if lsporder:
         lims[:] = [ [r[4],r[5],r[2],r[3],r[0],r[1]] for r in lims ];
         szs[:]  = [ s[::-1] for s in szs ];
-    return= np.array(szs),np.array(lims);
+    return np.array(szs),np.array(lims);
     
