@@ -7,6 +7,7 @@ import re;
 import numpy as np;
 import gzip;
 from pys import test;
+import pys;
 import sys;
 if sys.version_info >= (3,0):
     strenc = lambda b: b.decode('latin1');
@@ -405,3 +406,64 @@ def read(fname,**kw):
         except KeyError:
             raise NotImplementedError("Other file types not implemented yet!");
     return d;
+
+#parsing text files, taken from other things I do.
+def readgridp4(gridp4,lsporder=False,str=False):
+    '''
+    Parse the grid.p4 text file named fname, or from a string.
+
+    Parameters:
+    -----------
+
+    gridp4 -- filename of thing to read or in a string.
+    
+    Keyword Arguments:
+    ------------------
+
+    lsporder -- Return grids in lsp order as opposed to xs,ys,zs.
+    str      -- Passed argument is a string, not a filename.
+    
+    '''
+    if not str: gridp4 = pys.readtxt(gridp4);
+    out = dict();
+    lines = gridp4.splitlines();
+    xdim = int(lines[8].strip());
+    yst  = 9+xdim+1;
+    ydim = int(lines[yst-1].strip());
+    zst  = yst+ydim+1;
+    zdim = int(lines[zst-1].strip());
+    xs = np.array([float(line.strip()) for line in lines[9:9+xdim]]);
+    ys = np.array([float(line.strip()) for line in lines[yst:yst+ydim]]);
+    zs = np.array([float(line.strip()) for line in lines[zst:zst+zdim]]);
+    if lsporder:
+        return zs,ys,xs;
+    else:
+        return xs,ys,zs;
+
+def readregionsp4(regionsp4,lsporder=False,str=False):
+    '''
+    Parse the grid.p4 text file named fname, or from a string.
+
+    Parameters:
+    -----------
+
+    gridp4 -- filename of thing to read or in a string.
+    
+    Keyword Arguments:
+    ------------------
+
+    lsporder -- Return grids in lsp order as opposed to xs,ys,zs.
+    str      -- Passed argument is a string, not a filename.
+    
+    '''
+    if not str: regionsp4 = pys.readtxt(regionsp4);
+    lines = regionsp4.splitlines();
+    szs = lines[4::2];
+    szs = [list(map(int,line.split())) for line in szs];
+    lims= lines[5::2];
+    lims= [list(map(float,line.split())) for line in lims];
+    if lsporder:
+        lims[:] = [ [r[4],r[5],r[2],r[3],r[0],r[1]] for r in lims ];
+        szs[:]  = [ s[::-1] for s in szs ];
+    return= np.array(szs),np.array(lims);
+    
