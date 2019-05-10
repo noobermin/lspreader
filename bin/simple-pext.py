@@ -42,10 +42,9 @@ else:
     mn,mx = float('-inf'),float('inf');
 key = [ float(re.search("pext([0-9]+).p4",f).group(1))
         for f in pext ];
-pext = [i for i,k in zip(pext,key)
-        if mn <= k <= mx];
-key  = [i for i in key
-        if mn <= k <= mx];
+pext,key = zip(*[
+    (i,k) for i,k in zip(pext,key)
+    if mn <= k <= mx]);
 if opts['--lsp']:
     lspf=opts['--lsp'];
 else:
