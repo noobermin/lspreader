@@ -15,16 +15,18 @@ else:
     strenc = lambda b: b;
 #get basic dtypes
 def get_int(file,N=1,forcearray=False):
-    ret=np.frombuffer(file.read(4*N),dtype='>i4',count=N);
+    #ret=np.frombuffer(file.read(4*N),dtype='>i4',count=N);
+    ret = np.fromfile(file, dtype='>i4',count=N);
     #microoptimization for GB arrays, although fromstring works easier.
-    ret.flags.writeable = True
+    #ret.flags.writeable = True
     if N==1 and not forcearray:
         return ret[0];
     return ret;
 
 def get_float(file,N=1,forcearray=False):
-    ret=np.frombuffer(file.read(4*N),dtype='>f4',count=N);
-    ret.flags.writeable = True
+    ret = np.fromfile(file, dtype='>f4',count=N);
+    #ret=np.frombuffer(file.read(4*N),dtype='>f4',count=N);
+    #ret.flags.writeable = True
     if N==1 and not forcearray:
         return ret[0];
     return ret;
@@ -125,8 +127,8 @@ def get_header(file,**kw):
         header.update(d);
         #reading params
         n = get_int(file);
-        flags=[bool(get_int(file)) for i in range(n)];
-        units=[get_str(file) for i in range(n)];
+        hd['flags'] = flags=[bool(get_int(file)) for i in range(n)];
+        hd['units'] = units=[get_str(file) for i in range(n)];
         labels=['q','x','y','z','ux','uy','uz','E'];
         if n == 8:
             pass;
@@ -140,6 +142,7 @@ def get_header(file,**kw):
         header['params'] = [
             (label,unit) for (label,unit,flag) in zip(labels,units,flags) if flag
         ];
+        header['n_params'] = n;
     elif header['dump_type'] == 10:
         #this is a particle extraction file:
         header['geometry'] = get_int(file);

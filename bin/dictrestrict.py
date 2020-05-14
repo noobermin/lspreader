@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 '''
 Select values of dict of a numpy arrays, shape (1,) only based on a range
 (python tuple), range is inclusive (excluding is open).
@@ -10,7 +10,7 @@ Options:
   --output=OUTPUT -o OUTPUT    Output to OUTPUT instead of stdout.
   --exclude -x                 Exclude range instead of including it.    
 '''
-import cPickle as pickle;
+import pickle as pickle;
 import numpy as np;
 from docopt import docopt;
 

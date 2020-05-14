@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 '''
 Concatenate dictionaries of numpy arrays, shape (1,) only.
 
@@ -8,7 +8,7 @@ Usage:
 Options:
   -o OUTPUT --output=OUTPUT         Output to OUTPUT instead of stdout.
 '''
-import cPickle as pickle;
+import pickle as pickle;
 import numpy as np;
 from docopt import docopt;
 

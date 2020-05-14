@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 '''
 Read in pext files and output a dict. Assumes that the names
 are in order of the restart files. It still isn't general enough

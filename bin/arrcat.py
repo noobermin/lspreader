@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 '''
 Pointless script to concatenate numpy arrays, shape (1,) only.
 

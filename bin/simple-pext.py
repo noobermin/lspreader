@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 '''
 Read in pext files from a path with no restart run and output a recarray.
 Requires a .lsp file to be in the path, or to be passed. If <output> is
