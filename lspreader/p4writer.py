@@ -92,3 +92,34 @@ def dump_pext(f, pext):
     pextp = pext.byteswap();
     f.write(memoryview(pextp));
     
+
+def dump_gridp4(f, gridd):
+    if type(f) == str:
+        with open(f,'w') as ff:
+            dump_gridp4(ff,gridd);
+        return;
+    def _w(i): f.write(str(i)+'\n');
+    def _f(x, fmt='{:6.4e}'):
+        f.write(fmt.format(x)+'\n');
+    # header parameters in order
+    header = ['title','geometry','dimension'];
+    for i in header:
+        _w(gridd[i]);
+    #units
+    for unit in gridd['units']:
+        _w(unit);
+    grids = gridd['grids'];
+    #grids
+    _w(len(grids));
+    for i,grid in enumerate(grids):
+        _w(i);
+        if gridd['lsporder']:
+            grid = reversed(grid);
+        for axis in grid:
+            _w(len(axis));
+            for x in axis:
+                _f(x);
+            pass
+        pass
+    pass
+    
